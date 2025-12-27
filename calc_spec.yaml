@@ -1,0 +1,51 @@
+# Спецификация расчетов (Configuration as Code)
+# Сгенерировано из calc_spec.txt
+
+constants:
+  NDFL_RATE: 0.13
+  SOCIAL_RATE: 0.30
+  TRAUMA_RATE: 0.002
+  DIVIDEND_TAX_FACTOR: 0.85
+  PROFIT_TAX_RATE: 0.25
+  USN_RATE: 0.06
+
+inputs:
+  projects:
+    - { id: 'p1', desc: 'Проект 1' }
+    - { id: 'p2', desc: 'Проект 2' }
+    - { id: 'p3', desc: 'Проект 3' }
+    - { id: 'p4', desc: 'Проект 4' }
+  fot_base: 0
+  fixed_expenses: 0
+
+scenarios:
+  BELUSN:
+    name: "Бел УСН"
+    description: "Расчет для белой компании на УСН (доходы 6%)"
+    steps:
+      - id: revenue
+        label: "Выручка"
+        formula: "sum(projects.rate * projects.hours)"
+      - id: taxes_payroll
+        label: "Налоги на ФОТ"
+        formula: "fot_base * (0.13 + 0.30 + 0.002)"
+      - id: tax_usn
+        label: "Налог УСН"
+        formula: "(revenue - deduction) * 0.06"
+      - id: profit_net
+        label: "Чистая прибыль"
+        formula: "profit_operating * 0.85 - fixed_expenses"
+
+  BELNDS:
+    name: "Бел НДС"
+    description: "Расчет для компании на ОСНО (НДС 20-22%)"
+    steps:
+      - id: revenue_nds
+        label: "Выручка с НДС"
+        formula: "revenue_base * 1.22"
+      - id: vat_out
+        label: "Исходящий НДС"
+        formula: "revenue_nds / 1.22 * 0.22"
+      - id: profit_net
+        label: "Чистая прибыль"
+        formula: "(profit_operating * 0.85) - fixed_expenses"

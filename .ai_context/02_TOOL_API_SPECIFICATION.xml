@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ToolApiSpecification version="1.2_FINAL">
+    <purpose>
+        This module provides the complete and definitive API specification for your expert toolkit. 
+        You must consult this module to understand the capabilities and exact signatures of the tools at your disposal for interacting with the external environment.
+    </purpose>
+    
+    <CONTEXT_PRIMING>
+        <title>Context Priming for Tool API</title>
+        <desc>This document defines the interface for all external actions: file system operations, web access, and memory management.</desc>
+        <keywords>tools:10|api:9|specification:8|toolkit:8|filesystem:9|web:7|memory:7</keywords>
+        <terms>TOOL_API|EXPERT_TOOLKIT|ENVIRONMENT_INTERACTION|FILE_IO|WEB_ACCESS</terms>
+    </CONTEXT_PRIMING>
+
+    <AVAILABLE_TOOLS>
+        <run_shell_command>
+            <title>Tool: run_shell_command</title>
+            <desc>Executes a command in the system's shell. A high-risk tool requiring explicit user confirmation before use.</desc>
+            <SPECIFICATION>
+                <signature>run_shell_command(command: string, description: string, directory?: string)</signature>
+            </SPECIFICATION>
+        </run_shell_command>
+
+        <read_file>
+            <title>Tool: read_file</title>
+            <desc>Reads the entire content of a single file. Used for analyzing code, logs, and loading knowledge modules.</desc>
+            <SPECIFICATION>
+                <signature>read_file(absolute_path: string)</signature>
+            </SPECIFICATION>
+        </read_file>
+        
+        <write_file>
+            <title>Tool: write_file</title>
+            <desc>Writes or overwrites content to a specified file. The primary tool for applying patches and generating code.</desc>
+            <SPECIFICATION>
+                <signature>write_file(file_path: string, content: string)</signature>
+            </SPECIFICATION>
+        </write_file>
+
+        <read_many_files>
+            <title>Tool: read_many_files</title>
+            <desc>Reads content from multiple files in a single operation. This is the primary tool for loading Knowledge Base modules.</desc>
+            <SPECIFICATION>
+                <signature>read_many_files(paths: list[string])</signature>
+            </SPECIFICATION>
+        </read_many_files>
+        
+        <list_directory>
+            <title>Tool: list_directory</title>
+            <desc>Lists all files and subdirectories within a path to understand the project structure.</desc>
+            <SPECIFICATION>
+                <signature>list_directory(path: string, ignore?: list[string], respect_git_ignore?: boolean)</signature>
+            </SPECIFICATION>
+        </list_directory>
+
+        <glob>
+            <title>Tool: glob</title>
+            <desc>Finds all file paths that match a specified glob pattern (e.g., `**/*.py`), used for discovering relevant files.</desc>
+            <SPECIFICATION>
+                <signature>glob(pattern: string, path?: string, case_sensitive?: boolean, respect_git_ignore?: boolean)</signature>
+            </SPECIFICATION>
+        </glob>
+
+        <search_file_content>
+            <title>Tool: search_file_content</title>
+            <desc>Performs a low-level search for lines matching a regular expression within files. Useful for finding specific, known text strings (e.g., semantic anchors).</desc>
+            <SPECIFICATION>
+                <signature>search_file_content(pattern: string, path?: string, include?: string)</signature>
+            </SPECIFICATION>
+        </search_file_content>
+
+        <google_web_search>
+            <title>Tool: google_web_search</title>
+            <desc>Performs a Google web search to find external information like library documentation or error solutions.</desc>
+            <SPECIFICATION>
+                <signature>google_web_search(query: string)</signature>
+            </SPECIFICATION>
+        </google_web_search>
+        
+        <web_fetch>
+            <title>Tool: web_fetch</title>
+            <desc>Fetches the textual content from a given URL. Useful for analyzing documentation found via web search.</desc>
+            <SPECIFICATION>
+                <signature>web_fetch(url: string)</signature>
+            </SPECIFICATION>
+        </web_fetch>
+
+        <save_memory>
+            <title>Tool: save_memory</title>
+            <desc>Saves a critical fact, user preference, or key observation to your long-term memory for the current session.</desc>
+            <SPECIFICATION>
+                <signature>save_memory(fact: string)</signature>
+            </SPECIFICATION>
+        </save_memory>
+    </AVAILABLE_TOOLS>
+</ToolApiSpecification>

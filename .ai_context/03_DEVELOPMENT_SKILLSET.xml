@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DevelopmentSkillset version="1.1_FINAL">
+    <purpose>
+        This module provides you with the knowledge, best practices, and a recommended workflow for creating new, high-quality code in collaboration with the user.
+    </purpose>
+    
+    <CONTEXT_PRIMING>
+        <title>Context Priming for Development Skills</title>
+        <desc>Core concepts related to code creation, architectural planning, and structured implementation.</desc>
+        <keywords>development:10|create:9|build:8|refactor:8|workflow:7|planning:9|architecture:8</keywords>
+        <terms>DEVELOPMENT_SKILLSET|CODE_GENERATION|SOFTWARE_PLANNING|REFACTORING_WORKFLOW|SCAFFOLDING</terms>
+    </CONTEXT_PRIMING>
+
+    <USER_CONTEXT_INSIGHTS>
+        <title>Insights into User Scenarios (Information for Your Consideration)</title>
+        <desc>This section helps you understand the user's typical goals when they want to create or modify code. Use this to inform your proposals.</desc>
+        <SCENARIO name="Greenfield Development">
+            <user_goal>To create a new component, feature, or application from scratch.</user_goal>
+            <user_typical_workflow>User provides a high-level requirement and expects you to handle the entire development process, from planning to verification.</user_typical_workflow>
+        </SCENARIO>
+        <SCENARIO name="Targeted Refactoring">
+            <user_goal>To improve the structure, performance, or readability of existing code without changing its external behavior.</user_goal>
+            <user_typical_workflow>User points to a specific file or class and provides a goal (e.g., "make this more efficient," "split this class into two").</user_typical_workflow>
+        </SCENARIO>
+        <SCENARIO name="Feature Addition">
+            <user_goal>To add new functionality to an existing module or application.</user_goal>
+            <user_typical_workflow>User describes the new feature and where it should be integrated. They expect you to understand the existing code and add to it seamlessly.</user_typical_workflow>
+        </SCENARIO>
+    </USER_CONTEXT_INSIGHTS>
+
+    <AGENT_OPERATIONAL_TOOLKIT>
+        <title>Your Expert Development Toolkit (Playbooks & Procedures)</title>
+        <desc>This contains a recommended, structured workflow for development. You should propose this workflow to the user for complex tasks to ensure quality and alignment, but remain flexible.</desc>
+        
+        <RECOMMENDED_DEVELOPMENT_PLAYBOOK>
+            <title>Recommended Playbook: Structured Development</title>
+            <desc>This is a best-practice, multi-step workflow. You can propose it in whole or in part. Each step can be a point of discussion and approval with the user.</desc>
+            
+            <WORKFLOW_STEP>
+                <name>THINK_AND_CLARIFY</name>
+                <title>Step 1: Requirement Analysis</title>
+                <summary>The goal of this step is to fully understand and formalize the user's requirements before any planning or coding.</summary>
+                <procedure>
+                    <action>1. Initiate a dialogue to discuss the user's requirements and resolve all ambiguities. Use the `SUPERPOSITION_OF_MEANING` technique if necessary.</action>
+                    <action>2. Propose to create a formal `RequirementsAnalysis.xml` artifact to document our shared understanding.</action>
+                    <action>3. Await user approval before proceeding.</action>
+                </procedure>
+            </WORKFLOW_STEP>
+
+            <WORKFLOW_STEP>
+                <name>PLAN_THE_SCAFFOLD</name>
+                <title>Step 2: Detailed Scaffolding Plan</title>
+                <summary>The most critical intellectual step. The goal is to plan the "skeleton" of the code using semantic markup before writing any implementation logic.</summary>
+                <procedure>
+                    <action>1. Propose to create a `DevelopmentPlan.xml` artifact.</action>
+                    <action>2. Explain that this plan will define all new modules, classes, and functions with their complete `# START_CONTRACT` sections, but with empty implementation bodies.</action>
+                    <action>3. Emphasize that approving this "scaffold plan" is the best way to ensure the final code matches the agreed-upon architecture.</action>
+                </procedure>
+            </WORKFLOW_STEP>
+            
+            <WORKFLOW_STEP>
+                <name>GENERATE_THE_CODE</name>
+                <title>Step 3: Scaffold-Driven Code Generation</title>
+                <summary>The deterministic "compilation" of the approved plan into source code. This is a highly operational step.</summary>
+                <procedure>
+                    <action>1. Based on the approved `DevelopmentPlan.xml`, generate the file(s) with only the markup "scaffold" (contracts, function signatures, block anchors).</action>
+                    <action>2. Then, fill in the implementation logic for each block, one at a time, using atomic `UPDATE` patches to ensure safety.</action>
+                    <action>3. Continuously perform self-verification against the `GENERATIVE_COMPLETENESS_MANDATE` to avoid abbreviations.</action>
+                </procedure>
+            </WORKFLOW_STEP>
+            
+            <WORKFLOW_STEP>
+                <name>VERIFY_AND_FINALIZE</name>
+                <title>Step 4: Verification</title>
+                <summary>The final step to ensure the newly created code works as expected.</summary>
+                <procedure>
+                    <action>1. Propose a verification method to the user (e.g., "Should I try to run the application's main entry point, or is there a test suite I should execute?").</action>
+                    <action>2. After running the code, analyze `application.log` for any errors.</action>
+                    <action>3. If errors are found, announce the finding and suggest transitioning to a debugging task. This would involve loading the `04_DEBUGGING_SKILLSET.xml`.</action>
+                </procedure>
+            </WORKFLOW_STEP>
+
+        </RECOMMENDED_DEVELOPMENT_PLAYBOOK>
+    </AGENT_OPERATIONAL_TOOLKIT>
+</DevelopmentSkillset>

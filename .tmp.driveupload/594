@@ -1,0 +1,181 @@
+Ниже представлен полный маппинг и архитектура решения.
+
+Часть 1. Маппинг (Excel -> Калькулятор)
+Я разбил переменные на группы. В колонке «Логика» я использую понятные ID вместо адресов ячеек.
+
+1. Входные данные (Global Inputs)
+Эти данные приходят из листа «Дано» и используются везде.
+
+Excel (Дано)	ID переменной	Описание / Значение
+B4	rate_main	Ставка (основной проект)
+C4	hours_main	Часы (основной проект)
+B5	rate_second	Ставка (второй проект)
+C5	hours_second	Часы (второй проект)
+B6	rate_third	Ставка (третий проект)
+C6	hours_third	Часы (третий проект)
+B7	rate_fourth	Ставка (четвертый проект)
+C7	hours_fourth	Часы (четвертый проект)
+E35:E39	expenses_fixed	Фиксированные расходы (из Дано!E35...E39)
+Hardcoded	days_avg	Среднее кол-во дней (30.5)
+Hardcoded	days_vacation	Коэф. отпускных (29.3)
+2. Промежуточные расчеты (Calculated Inputs)
+Эти формулы одинаковы для всех, считаются один раз.
+
+Excel	ID переменной	Формула (JS Logic)
+D4	revenue_main	rate_main * hours_main
+D5	revenue_second	rate_second * hours_second
+D6	revenue_third	rate_third * hours_third
+D7	revenue_fourth	rate_fourth * hours_fourth
+D8	revenue_total_base	revenue_main + revenue_second + ...
+3. Логика Сценариев (Scenarios)
+Здесь самое важное. Вместо того чтобы писать код для каждого листа, мы создадим конфигурацию для каждого типа налога.
+
+Сценарий А: Бел УСН (White USN)
+
+Excel (Бел УСН)	ID поля	Логика расчета
+D8	revenue_total	revenue_total_base (сумма всех выручек)
+D18	fot_total	fot_base (вводимая вручную или рассчитываемая база ФОТ)
+D21	tax_ndfl	fot_total * 0.13
+D22	tax_social	fot_total * 0.30
+D23	tax_trauma	fot_total * 0.002
+D24	payroll_taxes	tax_ndfl + tax_social + tax_trauma
+D27	tax_deduction_base	revenue_total / 107 * 7 (Специфическая формула из файла)
+D28	tax_usn_6	(revenue_total - tax_deduction_base) * 0.06
+D30	net_salary	fot_total - tax_ndfl
+D37	banking_fee	revenue_total * 0.02
+D40	total_expenses	tax_deduction_base + tax_usn_6 + payroll_taxes + net_salary + banking_fee
+D42	profit_operating	revenue_total - total_expenses
+D44	profit_net	profit_operating * 0.85 - sum(expenses_fixed)
+Сценарий Б: Бел НДС (White NDS)
+
+Excel (Бел НДС)	ID поля	Логика расчета
+B5	rate_nds_adjusted	(rate_second - rate_second * 7/107) * 1.22
+D8	revenue_total_nds	Сумма пересчитанных рейтов с НДС
+...	...	(Логика повторяется, но с другими коэфф. НДС)
+Часть 2. Реализация (JavaScript)
+Я предлагаю подход "Configuration as Code". Мы создадим объект FORMULAS, который полностью описывает ваш Excel.
+
+Вот готовый код для Node.js (или браузера), который реализует эту структуру:
+
+javascript
+// 1. КОНФИГУРАЦИЯ (То, что вы будете менять при изменении Excel)
+const CONFIG = {
+    constants: {
+        NDFL_RATE: 0.13,
+        SOCIAL_RATE: 0.30,
+        TRAUMA_RATE: 0.002,
+        DIVIDEND_TAX_FACTOR: 0.85, // (100% - 15%)
+    },
+    // Входящие данные (значения по умолчанию)
+    inputs: {
+        projects: [
+            { id: 'p1', rate: 0, hours: 0 }, // B4, C4
+            { id: 'p2', rate: 0, hours: 0 }, // B5, C5
+            { id: 'p3', rate: 0, hours: 0 }, // B6, C6
+            { id: 'p4', rate: 0, hours: 0 }, // B7, C7
+        ],
+        fot_base: 0, // База ФОТ (D18 на листах)
+        fixed_expenses: 0 // Сумма E35:E39
+    },
+    
+    // ЛОГИКА СЦЕНАРИЕВ
+    scenarios: {
+        'bel_usn': {
+            name: 'Белая УСН',
+            steps: [
+                // 1. Выручка
+                { id: 'revenue', formula: (ctx) => ctx.projects.reduce((sum, p) => sum + (p.rate * p.hours), 0) },
+                
+                // 2. Налоги на ФОТ
+                { id: 'tax_ndfl', formula: (ctx) => ctx.fot_base * 0.13 },
+                { id: 'tax_social', formula: (ctx) => ctx.fot_base * 0.30 },
+                { id: 'tax_trauma', formula: (ctx) => ctx.fot_base * 0.002 },
+                { id: 'taxes_payroll_sum', formula: (ctx) => ctx.results.tax_ndfl + ctx.results.tax_social + ctx.results.tax_trauma },
+                
+                // 3. Специфические налоги УСН (из ячеек D27, D28)
+                { id: 'deduction_7_107', formula: (ctx) => (ctx.results.revenue / 107) * 7 }, // D27
+                { id: 'tax_usn', formula: (ctx) => (ctx.results.revenue - ctx.results.deduction_7_107) * 0.06 }, // D28
+                
+                // 4. Банковские и прочие (D37)
+                { id: 'bank_fee', formula: (ctx) => ctx.results.revenue * 0.02 },
+                
+                // 5. Итого расходы (D40 = Сумма налогов + ФОТ + комиссии)
+                // Важно: в экселе D40 = SUM(D27:D39), куда входит ФОТ (через D29->D24) и чистая зп (D30)
+                { id: 'total_costs', formula: (ctx) => {
+                    const r = ctx.results;
+                    const net_salary = ctx.fot_base - r.tax_ndfl;
+                    return r.deduction_7_107 + r.tax_usn + r.taxes_payroll_sum + net_salary + r.bank_fee;
+                }},
+                
+                // 6. Прибыль до дивидендов (D42)
+                { id: 'profit_operating', formula: (ctx) => ctx.results.revenue - ctx.results.total_costs },
+                
+                // 7. ЧИСТАЯ ПРИБЫЛЬ (D44)
+                { id: 'profit_net', formula: (ctx) => (ctx.results.profit_operating * 0.85) - ctx.fixed_expenses }
+            ]
+        },
+        
+        'ip_nds': {
+            name: 'ИП НДС',
+            steps: [
+                // Логика для ИП НДС (ячейки с листа "ИП НДС")
+                // Пример D8: Выручка * 1.22 (НДС сверху, если так в экселе)
+                { id: 'revenue_base', formula: (ctx) => ctx.projects.reduce((sum, p) => sum + (p.rate * p.hours), 0) },
+                { id: 'vat_amount', formula: (ctx) => ctx.results.revenue_base * 0.22 }, // В экселе было *0.22 в D8
+                { id: 'revenue_total', formula: (ctx) => ctx.results.revenue_base + ctx.results.vat_amount },
+                
+                // ...остальные шаги...
+                
+                // Финал D53
+                { id: 'profit_net', formula: (ctx) => (ctx.results.profit_operating * 0.85) - ctx.fixed_expenses } 
+            ]
+        }
+    }
+};
+
+// 2. ДВИЖОК КАЛЬКУЛЯТОРА
+class Calculator {
+    constructor(config) {
+        this.config = config;
+    }
+
+    calculate(scenarioKey, inputs) {
+        const scenario = this.config.scenarios[scenarioKey];
+        if (!scenario) throw new Error(`Scenario ${scenarioKey} not found`);
+
+        // Context available to every formula
+        const context = {
+            ...this.config.inputs, // defaults
+            ...inputs,             // user overrides
+            results: {}            // intermediate results storage
+        };
+
+        // Execute steps in order
+        scenario.steps.forEach(step => {
+            // Calculate and store result
+            context.results[step.id] = step.formula(context);
+        });
+
+        return context.results;
+    }
+}
+
+// 3. ПРИМЕР ИСПОЛЬЗОВАНИЯ
+const calc = new Calculator(CONFIG);
+
+// Данные как на листе "Дано"
+const userInputs = {
+    projects: [
+        { id: 'p1', rate: 2000, hours: 160 },
+        { id: 'p2', rate: 0, hours: 0 },
+    ],
+    fot_base: 100000, // ФОТ
+    fixed_expenses: 5000 // Расходы из E35:E39
+};
+
+const result = calc.calculate('bel_usn', userInputs);
+
+console.log("--- Результаты Бел УСН ---");
+console.log("Выручка:", result.revenue);
+console.log("Налог УСН:", result.tax_usn);
+console.log("Чистая прибыль:", result.profit_net);

@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>CAPUSTA - Financial Calculator Pro</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Подключение FontAwesome 5.15.4 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- TOP NAVIGATION -->
+    <div class="top-bar">
+      <div class="nav-group">
+        <button class="tab-btn active" data-tab="calculator"><i class="fas fa-calculator mr-1"></i> Калькулятор</button>
+        <button class="tab-btn" data-tab="crm"><i class="fas fa-briefcase mr-1"></i> CRM</button>
+        <button class="tab-btn" data-tab="price"><i class="fas fa-tags mr-1"></i> Прайс</button>
+        <button class="tab-btn" data-tab="settings"><i class="fas fa-cog mr-1"></i> Настройки</button>
+      </div>
+      <div class="nav-group">
+        <button class="action-btn" id="saveAllBtn" style="display:none;"><i class="fas fa-save mr-1"></i> Сохранить</button>
+        <button class="action-btn" id="exportBtn"><i class="fas fa-file-export mr-1"></i> Экспорт</button>
+      </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="content-area">
+
+      <!-- ============================================
+           TAB: КАЛЬКУЛЯТОР
+           ============================================ -->
+      <div id="tab-calculator" class="tab-content" style="display: block;">
+        
+        <!-- 1.1 Секция парсера -->
+        <div class="section">
+          <div class="section-title">
+            <span><i class="fas fa-link mr-1"></i> Данные закупки</span>
+            <button class="btn-secondary" id="reParseBtn"><i class="fas fa-sync-alt mr-1"></i> Перепарсить</button>
+          </div>
+          
+          <div style="display:grid; grid-template-columns: 2fr 1fr; gap: 10px; margin-bottom: 10px;">
+            <div>
+              <label style="font-size: 9px; color: var(--text-muted); display: block; margin-bottom: 2px;">Ссылка на закупку</label>
+              <input type="text" id="tenderUrl" placeholder="https://zakupki.kontur.ru/...">
+            </div>
+            <div>
+              <label style="font-size: 9px; color: var(--text-muted); display: block; margin-bottom: 2px;">Дата окончания</label>
+              <input type="date" id="tenderDeadline">
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+            <div>
+              <label style="font-size: 9px; color: var(--text-muted); display: block; margin-bottom: 2px;">Заказчик</label>
+              <input type="text" id="customerName" placeholder="Название организации">
+            </div>
+            <div>
+              <label style="font-size: 9px; color: var(--text-muted); display: block; margin-bottom: 2px;">ИНН</label>
+              <input type="text" id="customerInn" placeholder="1234567890">
+            </div>
+            <div>
+              <label style="font-size: 9px; color: var(--text-muted); display: block; margin-bottom: 2px;">КПП</label>
+              <input type="text" id="customerKpp" placeholder="123456789">
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px;">
+            <div>
+              <label style="font-size: 9px; color: var(--text-muted); display: block; margin-bottom: 2px;">Контакт (ФИО)</label>
+              <input type="text" id="contactName" placeholder="Иванов Иван Иванович">
+            </div>
+            <div>
+              <label style="font-size: 9px; color: var(--text-muted); display: block; margin-bottom: 2px;">Телефон</label>
+              <input type="tel" id="contactPhone" placeholder="+7 (999) 123-45-67">
+            </div>
+            <div>
+              <label style="font-size: 9px; color: var(--text-muted); display: block; margin-bottom: 2px;">Email</label>
+              <input type="email" id="contactEmail" placeholder="example@mail.ru">
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 10px;">
+            <div>
+              <label style="font-size: 9px; color: var(--text-muted); display: block; margin-bottom: 2px;">НМЦ</label>
+              <input type="number" id="nmcValue" placeholder="0">
+            </div>
+            <div>
+              <label style="font-size: 9px; color: var(--text-muted); display: block; margin-bottom: 2px;">Обесп. заявки</label>
+              <input type="number" id="bidSecurity" placeholder="0">
+              <span style="font-size: 9px; color: var(--text-muted);" id="bidSecurityCalc"></span>
+            </div>
+            <div>
+              <label style="font-size: 9px; color: var(--text-muted); display: block; margin-bottom: 2px;">Обесп. контракта</label>
+              <input type="number" id="contractSecurity" placeholder="0">
+              <span style="font-size: 9px; color: var(--text-muted);" id="contractSecurityCalc"></span>
+            </div>
+            <div>
+              <label style="font-size: 9px; color: var(--text-muted); display: block; margin-bottom: 2px;">Тариф</label>
+              <select id="tariffType">
+                <option value="standard">Стандарт</option>
+                <option value="premium">Премиум</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr 2fr; gap: 10px; margin-bottom: 10px;">
+            <div>
+              <label style="font-size: 9px; color: var(--text-muted); display: block; margin-bottom: 2px;">Кол-во ЧЧ</label>
+              <input type="number" id="totalHours" placeholder="0">
+            </div>
+            <div>
+              <label style="font-size: 9px; color: var(--text-muted); display: block; margin-bottom: 2px;">Средняя ст. часа</label>
+              <input type="number" id="avgRate" placeholder="0.00" step="0.01">
+            </div>
+            <div>
+              <label style="font-size: 9px; color: var(--text-muted); display: block; margin-bottom: 2px;">Срок оказания услуг</label>
+              <div style="display: flex; gap: 6px;">
+                <input type="date" id="serviceStart" style="flex: 1;">
+                <input type="date" id="serviceEnd" style="flex: 1;">
+                <input type="number" id="serviceMonths" placeholder="мес" style="width: 50px;" readonly>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 10px;">
+            <label style="font-size: 9px; color: var(--text-muted); display: block; margin-bottom: 2px;">Адреса объектов</label>
+            <textarea id="addresses" rows="2" placeholder="Адрес 1&#10;Адрес 2"></textarea>
+          </div>
+
+          <div>
+            <label style="font-size: 9px; color: var(--text-muted); display: block; margin-bottom: 2px;">Комментарии</label>
+            <textarea id="comments" rows="3" placeholder="Комментарии к закупке (автосохранение)"></textarea>
+          </div>
+        </div>
+
+        <!-- 1.2 Расчет охраны -->
+        <div class="section">
+          <div class="section-title">
+            <span><i class="fas fa-shield-alt mr-1"></i> Расчет охраны</span>
+          </div>
+          
+          <div class="summary-card">
+            <div class="summary-grid">
+              <div class="summary-item">
+                <div class="summary-label">Итого часов</div>
+                <div class="summary-value" id="totalHoursCalc">0</div>
+              </div>
+              <div class="summary-item">
+                <div class="summary-label">Итого человек</div>
+                <div class="summary-value" id="totalPeopleCalc">0</div>
+              </div>
+              <div class="summary-item">
+                <div class="summary-label">Средняя ставка</div>
+                <div class="summary-value" id="avgRateCalc">0.00</div>
+              </div>
+              <div class="summary-item">
+                <div class="summary-label highlight">Общая сумма</div>
+                <div class="summary-value highlight" id="totalAmountCalc">0.00</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="background: var(--bg-tertiary); padding: 8px; border-radius: var(--radius-md); margin-bottom: 10px;">
+            <div style="font-size: 9px; color: var(--text-muted); margin-bottom: 2px;">Остаток для распределения</div>
+            <div style="display: flex; justify-content: space-between; font-size: 11px;">
+              <span>Часы: <strong id="remainingHours">0</strong></span>
+              <span>Сумма: <strong id="remainingAmount">0.00</strong></span>
+            </div>
+          </div>
+
+          <table class="data-grid" id="securityCalcTable">
+            <thead>
+              <tr>
+                <th style="width: 20%;">Тип поста</th>
+                <th style="width: 25%;">Описание</th>
+                <th style="width: 10%;">ЧЧ/мес</th>
+                <th style="width: 8%;">Мес</th>
+                <th style="width: 12%;">Ст. час</th>
+                <th style="width: 12%;">В мес</th>
+                <th style="width: 10%;">Итого</th>
+                <th style="width: 3%;"></th>
+              </tr>
+            </thead>
+            <tbody id="securityRowsBody"></tbody>
+          </table>
+          <button class="btn-icon" id="addCalcRowBtn" style="margin-top: 6px;"><i class="fas fa-plus"></i></button>
+        </div>
+
+        <!-- 1.3 Дополнительные расходы -->
+        <div class="section">
+          <div class="section-title">
+            <span><i class="fas fa-coins mr-1"></i> Дополнительные расходы</span>
+          </div>
+          
+          <div class="summary-card">
+            <div class="summary-grid">
+              <div class="summary-item">
+                <div class="summary-label">Доп. расходы</div>
+                <div class="summary-value" id="extraTotalCalc">0.00</div>
+              </div>
+              <div class="summary-item">
+                <div class="summary-label highlight">Итого контракт</div>
+                <div class="summary-value highlight" id="grandTotalContract">0.00</div>
+              </div>
+            </div>
+          </div>
+
+          <table class="data-grid" id="extraExpensesTable">
+            <thead>
+              <tr>
+                <th style="width: 35%;">Название</th>
+                <th style="width: 15%;">Кол-во</th>
+                <th style="width: 18%;">Цена</th>
+                <th style="width: 15%;">Период</th>
+                <th style="width: 12%;">Итого</th>
+                <th style="width: 3%;"></th>
+              </tr>
+            </thead>
+            <tbody id="extraRowsBody"></tbody>
+          </table>
+          <button class="btn-icon" id="addExtraRowBtn" style="margin-top: 6px;"><i class="fas fa-plus"></i></button>
+        </div>
+
+        <!-- 1.4 Схемы расчетов -->
+        <div class="section">
+          <div class="section-title"><i class="fas fa-chart-line mr-1"></i> Схемы расчетов</div>
+          
+          <div class="summary-grid" style="margin-bottom: 15px;">
+            <div class="summary-item"><span class="summary-label">БЕЛ УСН</span><span class="summary-value" id="rentBELUSN">0%</span></div>
+            <div class="summary-item"><span class="summary-label">СЕР УСН</span><span class="summary-value" id="rentSERUSN">0%</span></div>
+            <div class="summary-item"><span class="summary-label">БЕЛ НДС</span><span class="summary-value" id="rentBELNDS">0%</span></div>
+            <div class="summary-item"><span class="summary-label">СЕР НДС</span><span class="summary-value" id="rentSERNDS">0%</span></div>
+            <div class="summary-item"><span class="summary-label">ИП НДС</span><span class="summary-value" id="rentIPNDS">0%</span></div>
+          </div>
+
+          <div id="schemesDetailsContainer"></div>
+        </div>
+
+      </div>
+
+      <!-- ========== CRM МОДУЛЬ ========== -->
+      <div id="tab-crm" class="tab-content" style="display:none;">
+        <div style="display: flex; gap: 6px; margin-bottom: 12px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 6px;">
+          <button class="tab-btn active" data-subtab="deals"><i class="fas fa-handshake mr-1"></i> Сделки</button>
+          <button class="tab-btn" data-subtab="tasks"><i class="fas fa-tasks mr-1"></i> Задачи</button>
+          <button class="tab-btn" data-subtab="counterparties"><i class="fas fa-building mr-1"></i> Контрагенты</button>
+          <button class="tab-btn" data-subtab="managers"><i class="fas fa-users mr-1"></i> Менеджеры</button>
+        </div>
+
+        <div id="crm-deals" class="crm-subtab" style="display:block;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <input type="text" id="dealsSearch" placeholder="🔍 Поиск сделок" style="flex: 1; margin-right: 10px;">
+            <select id="dealsSort" style="width: 120px;">
+              <option value="deadline">Дедлайн</option>
+              <option value="profit">Рент.</option>
+              <option value="nmc">НМЦ</option>
+            </select>
+          </div>
+          <div id="dealsContainer"></div>
+        </div>
+
+        <div id="crm-tasks" class="crm-subtab">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+            <input type="text" id="tasksSearch" placeholder="🔍 Поиск задач" style="flex: 1; margin-right: 10px;">
+            <button class="btn-primary" id="addTaskBtn"><i class="fas fa-plus mr-1"></i> Задача</button>
+          </div>
+          <div id="tasksContainer"></div>
+        </div>
+
+        <div id="crm-counterparties" class="crm-subtab">
+          <input type="text" id="counterpartiesSearch" placeholder="🔍 Поиск по ИНН или названию" style="width: 100%; margin-bottom: 10px;">
+          <table class="data-grid" id="counterpartiesTable">
+            <thead><tr><th>Название</th><th>ИНН</th><th>КПП</th><th>Сделок</th><th>Активность</th></tr></thead>
+            <tbody id="counterpartiesBody"></tbody>
+          </table>
+        </div>
+
+        <div id="crm-managers" class="crm-subtab">
+          <button class="btn-primary" id="addManagerBtn" style="margin-bottom: 10px;"><i class="fas fa-user-plus mr-1"></i> Менеджер</button>
+          <table class="data-grid" id="managersTable">
+            <thead><tr><th>ФИО</th><th>Должность</th><th>Телефон</th><th>Email</th><th></th></tr></thead>
+            <tbody id="managersBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB: ПРАЙС -->
+      <div id="tab-price" class="tab-content">
+        <div class="section">
+          <div class="section-title">
+            <span><i class="fas fa-shield-alt mr-1"></i> Прайс: охрана</span>
+            <button class="btn-icon" id="addPriceRowBtn"><i class="fas fa-plus"></i></button>
+          </div>
+          <table class="data-grid">
+            <thead><tr><th>Название</th><th>Регион</th><th style="text-align:center">Ор.</th><th>Вахта</th><th>ЧЧ</th><th>Ставка</th><th style="text-align:right">Итого</th><th></th></tr></thead>
+            <tbody id="priceTableBody"></tbody>
+          </table>
+        </div>
+        <div class="section">
+          <div class="section-title">
+            <span><i class="fas fa-money-bill mr-1"></i> Прайс: доп. расходы</span>
+            <button class="btn-icon" id="addExtraPriceRowBtn"><i class="fas fa-plus"></i></button>
+          </div>
+          <table class="data-grid">
+            <thead><tr><th>Название</th><th>Цена</th><th>Тип</th><th></th></tr></thead>
+            <tbody id="extraPriceTableBody"></tbody>
+          </table>
+        </div>
+        <div style="text-align: right;">
+          <button class="btn-primary" id="savePriceBtn"><i class="fas fa-check-circle mr-1"></i> Сохранить прайс</button>
+        </div>
+      </div>
+
+      <!-- TAB: НАСТРОЙКИ -->
+      <div id="tab-settings" class="tab-content">
+        <div class="section">
+          <div class="section-title"><span><i class="fas fa-sliders-h mr-1"></i> Переменные для расчетов</span></div>
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+            <div><label style="font-size:9px;color:var(--text-muted);">МРОТ</label><input type="number" id="var_mrot" value="27093"></div>
+            <div><label style="font-size:9px;color:var(--text-muted);">НДФЛ (%)</label><input type="number" id="var_ndfl" value="13"></div>
+            <div><label style="font-size:9px;color:var(--text-muted);">УСН (%)</label><input type="number" id="var_usn" value="6"></div>
+            <div><label style="font-size:9px;color:var(--text-muted);">ОСН (%)</label><input type="number" id="var_osn" value="22"></div>
+            <div><label style="font-size:9px;color:var(--text-muted);">Налог на прибыль (%)</label><input type="number" id="var_profit_tax" value="25"></div>
+            <div><label style="font-size:9px;color:var(--text-muted);">Дивиденды (коэф.)</label><input type="number" id="var_dividend" value="0.85" step="0.01"></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title"><span><i class="fab fa-telegram-plane mr-1"></i> Telegram Bot</span></div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div><input type="text" id="tgUser" placeholder="Имя пользователя (@)"></div>
+            <div><input type="password" id="tgToken" placeholder="API Token"></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title"><span><i class="fas fa-scroll mr-1"></i> Спецификация</span></div>
+          <textarea id="calcSpecArea" rows="8" readonly style="font-size: 10px; color: var(--text-muted);"></textarea>
+        </div>
+
+        <div style="text-align: right;">
+          <button class="btn-primary" id="saveSettingsBtn"><i class="fas fa-save mr-1"></i> Сохранить настройки</button>
+        </div>
+      </div>
+
+    </div> <!-- Конец .content-area -->
+
+  </div> <!-- Конец .container -->
+
+  <!-- SCRIPTS -->
+  <script src="rules.js"></script>
+  <script src="data.js"></script>
+  <script src="calculator.js"></script>
+  <script src="app.js"></script>
+
+</body>
+</html>
