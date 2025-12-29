@@ -1,3 +1,6 @@
 # Игнорировать временные папки Google Drive, AI context
 .tmp.driveupload/
 ai_context/
+BACKUP
+
+
