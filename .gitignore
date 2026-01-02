@@ -1,6 +1,3 @@
-# Игнорировать временные папки Google Drive, AI context
+# Игнорировать временные папки Google Drive
 .tmp.driveupload/
-ai_context/
-BACKUP
-
-
+.tmp.drivedownload/

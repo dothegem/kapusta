@@ -115,7 +115,7 @@ async function processNextLink() {
             console.log(`[Background][processNextLink] Executing script on tab ${tabId}`);
             const result = await chrome.scripting.executeScript({
                 target: { tabId: tabId },
-                files: ['parser.js']
+                files: ['src/parser.js']
             });
             
             const executionResult = await chrome.scripting.executeScript({
@@ -176,4 +176,4 @@ async function processNextLink() {
         // END_BLOCK_CLEANUP_AND_RECURSION
     }
 }
-// END_FUNCTION_PROCESS_NEXT_LINK
+// END_FUNCTION_processNextLink

@@ -47,7 +47,7 @@ window.App.init = async () => {
 
     // Load spec file
     try {
-        const response = await fetch(chrome.runtime.getURL('calc_spec.yaml'));
+        const response = await fetch(chrome.runtime.getURL('src/calc_spec.yaml'));
         const specText = await response.text();
         if (document.getElementById('calcSpecArea')) document.getElementById('calcSpecArea').value = specText;
     } catch (e) { console.error("[App] Failed to load spec:", e); }
@@ -123,11 +123,14 @@ window.App.saveAll = async () => {
     alert('✅ Все изменения сохранены');
 };
 
+// START_FUNCTION_App_renderDealCard
 window.App.renderDealCard = (deal, isExpanded = false) => {
+    // START_BLOCK_CALC_DEADLINE
     const deadline = new Date(deal.deadline);
     const now = new Date();
     const timeLeft = Math.floor((deadline - now) / (1000 * 60 * 60 * 24));
     const timerColor = timeLeft < 3 ? 'var(--accent-red)' : (timeLeft < 7 ? 'var(--accent-orange)' : 'var(--accent-green)');
+    // END_BLOCK_CALC_DEADLINE
   
     if (!isExpanded) {
       return `
@@ -153,17 +156,29 @@ window.App.renderDealCard = (deal, isExpanded = false) => {
     }
     return '';
 };
+// END_FUNCTION_App_renderDealCard
 
+// START_FUNCTION_App_runAutoParsing
+// START_CONTRACT:
+// PURPOSE: Запускает процесс автоматического парсинга данных с текущей вкладки.
+// INPUTS:
+// - [force] => boolean: Принудительный перезапуск парсинга (игнорирование кэша).
+// SIDE_EFFECTS: Инъектирует скрипт parser.js во вкладку, обновляет DOM.
+// END_CONTRACT
 window.App.runAutoParsing = async (force = false) => {
+    // START_BLOCK_VALIDATE_TAB: [Проверка текущей вкладки на соответствие целевым доменам.]
     let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (!tab?.url) return;
     const isTender = tab.url.match(/zakupki\.kontur\.ru\/\d+/) || tab.url.includes("bidzaar.com/tender/");
     if (!isTender) return;
+    // END_BLOCK_VALIDATE_TAB
 
+    // START_BLOCK_CHECK_CACHE: [Проверка наличия сохраненных данных для этого тендера.]
     const tid = window.App.getTenderId(tab.url);
     if (!force && tid) {
         const saved = await chrome.storage.local.get([`tenderCalc_${tid}`]);
         if (saved[`tenderCalc_${tid}`]?.resultText) {
+            console.log("[App][runAutoParsing][CHECK_CACHE][Info] Data found in cache.");
             document.getElementById("resultArea").value = saved[`tenderCalc_${tid}`].resultText;
             // Restore other fields
             const data = saved[`tenderCalc_${tid}`];
@@ -174,9 +189,12 @@ window.App.runAutoParsing = async (force = false) => {
             return;
         }
     }
+    // END_BLOCK_CHECK_CACHE
 
+    // START_BLOCK_EXECUTE_PARSER: [Инъекция скрипта и извлечение данных.]
     try {
-        await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['parser.js'] });
+        console.log("[App][runAutoParsing][EXECUTE_PARSER][Start] Injecting parser script...");
+        await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['src/parser.js'] });
         const s = await chrome.storage.local.get(['parserminprice']);
         const min = s.parserminprice || 350;
         const res = await chrome.scripting.executeScript({
@@ -187,6 +205,7 @@ window.App.runAutoParsing = async (force = false) => {
 
         if (res?.[0]?.result) {
             const data = res[0].result;
+            console.log("[App][runAutoParsing][EXECUTE_PARSER][Success] Data extracted:", data);
             document.getElementById("resultArea").value = data.formattedText;
             // Auto-fill form
             const tenderData = data.dataArray[0];
@@ -203,15 +222,21 @@ window.App.runAutoParsing = async (force = false) => {
             }
         }
     } catch (e) { console.error("[App] Parser error:", e); }
+    // END_BLOCK_EXECUTE_PARSER
 };
+// END_FUNCTION_App_runAutoParsing
 
+// START_FUNCTION_App_getTenderId
 window.App.getTenderId = (url) => {
     if (url.includes("zakupki.kontur.ru/")) return (url.match(/zakupki\.kontur\.ru\/(\d+)/)||[])[1] ? `kontur_${url.match(/zakupki\.kontur\.ru\/(\d+)/)[1]}` : "";
     if (url.includes("bidzaar.com/tender/")) return (url.match(/bidzaar\.com\/tender\/([\w-]+)/)||[])[1] ? `bidzaar_${url.match(/bidzaar\.com\/tender\/([\w-]+)/)[1]}` : "";
     return "";
 };
+// END_FUNCTION_App_getTenderId
 
+// START_FUNCTION_App_renderCRM
 window.App.renderCRM = async () => {
+    // START_BLOCK_LOAD_DEALS
     const container = document.getElementById('dealsContainer');
     if (!container) return;
     container.innerHTML = '';
@@ -223,20 +248,26 @@ window.App.renderCRM = async () => {
       container.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-muted);">Нет сохраненных тендеров</div>';
       return;
     }
+    // END_BLOCK_LOAD_DEALS
     
+    // START_BLOCK_RENDER_CARDS
     tenderKeys.forEach(k => {
       const data = store[k];
       const tid = k.replace('tenderCalc_', '');
       container.innerHTML += window.App.renderDealCard({...data, id: tid});
     });
+    // END_BLOCK_RENDER_CARDS
 };
+// END_FUNCTION_App_renderCRM
 
 window.App.openDeal = (tid) => { console.log('Opening:', tid); };
+// START_FUNCTION_App_deleteTender
 window.App.deleteTender = async (key) => {
     if (confirm('Удалить?')) {
       await chrome.storage.local.remove(key);
       window.App.renderCRM();
     }
 };
+// END_FUNCTION_App_deleteTender
 
 document.addEventListener('DOMContentLoaded', window.App.init);

@@ -1,6 +1,18 @@
 // FILE: parser.js
-// VERSION: 2.1
-// PURPOSE: Unified parsing logic with CRM counterparty integration
+// VERSION: 2.1.0
+// START_MODULE_CONTRACT:
+// PURPOSE: Контентный скрипт для извлечения данных о тендерах со страниц площадок.
+// SCOPE: Парсинг DOM (Kontur, Bidzaar), нормализация данных, проверка контрагентов в CRM.
+// INPUT: DOM страницы.
+// OUTPUT: Объект с данными тендера (ИНН, НМЦ, контакты).
+// KEYWORDS: [DOMAIN(9): Parsing; DOMAIN(7): CRM_Integration; TECH(6): Regex; TECH(8): DOMSelector]
+// LINKS: [CALLED_BY(9): App.runAutoParsing; CALLED_BY(8): Background.processNextLink]
+// END_MODULE_CONTRACT
+// START_MODULE_MAP:
+// OBJ 05 [Утилиты для очистки текста и парсинга чисел] => Parser.helpers
+// FUNC 09 [Проверка и создание контрагента в локальной CRM] => Parser.checkCounterparty
+// FUNC 10 [Основной метод экстракции данных со страницы] => Parser.extractData
+// END_MODULE_MAP
 
 window.Parser = window.Parser || {};
 
@@ -14,7 +26,18 @@ window.Parser.helpers = {
     formatInt: (num) => new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 }).format(num)
 };
 
+// START_FUNCTION_Parser_checkCounterparty
+// START_CONTRACT:
+// PURPOSE: Проверяет наличие контрагента в базе. Если нет - создает. Если есть - обновляет активность.
+// INPUTS:
+// - [inn] => string: ИНН организации.
+// - [kpp] => string: КПП.
+// - [name] => string: Название.
+// OUTPUTS:
+// - [number] ID контрагента.
+// END_CONTRACT
 window.Parser.checkCounterparty = async (inn, kpp, name) => {
+    // START_BLOCK_CRM_CHECK
     if (!inn) return null;
     const stored = await chrome.storage.local.get('counterparties');
     const list = stored.counterparties || [];
@@ -36,12 +59,24 @@ window.Parser.checkCounterparty = async (inn, kpp, name) => {
       await chrome.storage.local.set({ counterparties: list });
       return existing.id;
     }
+    // END_BLOCK_CRM_CHECK
 };
+// END_FUNCTION_Parser_checkCounterparty
 
+// START_FUNCTION_Parser_extractData
+// START_CONTRACT:
+// PURPOSE: Извлекает данные тендера из текущей страницы на основе URL.
+// INPUTS:
+// - [threshold] => number: Минимальная цена (опционально, для фильтрации).
+// - [autoSetStatus] => boolean: Флаг автоматического обновления статуса (не используется в текущей версии).
+// OUTPUTS:
+// - [object] { dataArray: [...], formattedText: string }
+// END_CONTRACT
 window.Parser.extractData = async (threshold, autoSetStatus = false) => {
     const h = window.Parser.helpers;
     const url = window.location.href.split('?')[0];
     
+    // START_BLOCK_IDENTIFY_PLATFORM
     let tenderId = "";
     if (url.includes("zakupki.kontur.ru/")) {
         const match = url.match(/zakupki\.kontur\.ru\/(\d+)/);
@@ -50,6 +85,7 @@ window.Parser.extractData = async (threshold, autoSetStatus = false) => {
         const match = url.match(/bidzaar\.com\/tender\/([\w-]+)/);
         tenderId = match ? `bidzaar_${match[1]}` : `bidzaar_${url}`;
     }
+    // END_BLOCK_IDENTIFY_PLATFORM
 
     let data = {
         tenderId: tenderId,
@@ -64,6 +100,7 @@ window.Parser.extractData = async (threshold, autoSetStatus = false) => {
         formattedText: ""
     };
 
+    // START_BLOCK_EXTRACT_KONTUR
     if (url.includes("zakupki.kontur.ru")) {
         const orgEl = document.querySelector('.lot-customer__info');
         if (orgEl) {
@@ -87,6 +124,7 @@ window.Parser.extractData = async (threshold, autoSetStatus = false) => {
             data.contactName = h.clean(text.split('\n')[0]);
         }
     }
+    // END_BLOCK_EXTRACT_KONTUR
 
     data.formattedText = `${data.organizer}\nИНН: ${data.customerInn}\nНМЦ: ${data.priceValue}\nКонтакты: ${data.contactName} ${data.contactPhone}`;
 
@@ -95,3 +133,4 @@ window.Parser.extractData = async (threshold, autoSetStatus = false) => {
         formattedText: data.formattedText
     };
 };
+// END_FUNCTION_Parser_extractData

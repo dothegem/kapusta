@@ -135,6 +135,11 @@
             <label style="font-size: 9px; color: var(--text-muted); display: block; margin-bottom: 2px;">Комментарии</label>
             <textarea id="comments" rows="3" placeholder="Комментарии к закупке (автосохранение)"></textarea>
           </div>
+
+          <div>
+            <label style="font-size: 9px; color: var(--text-muted); display: block; margin-bottom: 2px;">Результат парсинга</label>
+            <textarea id="resultArea" rows="5" placeholder="Здесь появится результат парсинга" readonly></textarea>
+          </div>
         </div>
 
         <!-- 1.2 Расчет охраны -->
@@ -175,13 +180,15 @@
           <table class="data-grid" id="securityCalcTable">
             <thead>
               <tr>
-                <th style="width: 20%;">Тип поста</th>
-                <th style="width: 25%;">Описание</th>
-                <th style="width: 10%;">ЧЧ/мес</th>
-                <th style="width: 8%;">Мес</th>
-                <th style="width: 12%;">Ст. час</th>
-                <th style="width: 12%;">В мес</th>
-                <th style="width: 10%;">Итого</th>
+                <th style="width: 15%;">Тип поста</th>
+                <th style="width: 20%;">Описание</th>
+                <th style="width: 8%;">ЧЧ/мес</th>
+                <th style="width: 6%;">Мес</th>
+                <th style="width: 10%;">Ст. час</th>
+                <th style="width: 10%;">В мес</th>
+                <th style="width: 8%;">Итого</th>
+                <th style="width: 15%;">Адрес объекта</th>
+                <th style="width: 8%;">Форма</th>
                 <th style="width: 3%;"></th>
               </tr>
             </thead>
@@ -212,11 +219,13 @@
           <table class="data-grid" id="extraExpensesTable">
             <thead>
               <tr>
-                <th style="width: 35%;">Название</th>
-                <th style="width: 15%;">Кол-во</th>
-                <th style="width: 18%;">Цена</th>
-                <th style="width: 15%;">Период</th>
-                <th style="width: 12%;">Итого</th>
+                <th style="width: 25%;">Название</th>
+                <th style="width: 10%;">Кол-во</th>
+                <th style="width: 15%;">Цена</th>
+                <th style="width: 10%;">Ед.изм</th>
+                <th style="width: 15%;">Тип НДС</th>
+                <th style="width: 10%;">Период</th>
+                <th style="width: 10%;">Итого</th>
                 <th style="width: 3%;"></th>
               </tr>
             </thead>
