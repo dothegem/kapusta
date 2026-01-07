@@ -1,0 +1,36 @@
+{
+  "version": "2026-01-08",
+  "ui": {
+    "themeDefault": "light",
+    "vatModeDefault": "outside"
+  },
+  "constants": {
+    "daysInMonth": 30.5,
+    "vacation": {
+      "avgDaysInMonth": 29.3,
+      "vacationDaysPerYear": 28,
+      "monthsInYear": 12
+    }
+  },
+  "rates": {
+    "ndfl": 0.13,
+    "usn": 0.06,
+    "vatLow": 0.07,
+    "vatHigh": 0.22,
+    "profitTax": 0.25,
+    "pfr": 0.22,
+    "fss": 0.029,
+    "foms": 0.051
+  },
+  "cashout": {
+    "dividendNet": 0.85,
+    "dividendTax": 0.13,
+    "cashoutCommission": 0.15,
+    "cashoutRisk": 0.12
+  },
+  "defaults": {
+    "mrot": 27093,
+    "officialSalary": 27093,
+    "admRate": 0
+  }
+}

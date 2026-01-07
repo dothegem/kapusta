@@ -1,41 +1,35 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>CAPUSTA - Financial Calculator Pro</title>
-  <link rel="stylesheet" href="styles.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <!-- Подключение FontAwesome 5.15.4 -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <meta charset="UTF-8" />
+  <title>CAPUSTA</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
 </head>
 <body>
 
   <div class="container">
 
-    <!-- TOP NAVIGATION -->
     <div class="top-bar">
       <div class="nav-group">
-        <button class="tab-btn active" data-tab="calculator"><i class="fas fa-calculator mr-1"></i> Калькулятор</button>
+        <button class="tab-btn active" data-tab="calculator"><i class="fas fa-calculator mr-1"></i> КАЛЬКУЛЯТОР</button>
         <button class="tab-btn" data-tab="crm"><i class="fas fa-briefcase mr-1"></i> CRM</button>
-        <button class="tab-btn" data-tab="price"><i class="fas fa-tags mr-1"></i> Прайс</button>
-        <button class="tab-btn" data-tab="settings"><i class="fas fa-cog mr-1"></i> Настройки</button>
+        <button class="tab-btn" data-tab="price"><i class="fas fa-tags mr-1"></i> ПРАЙС</button>
+        <button class="tab-btn" data-tab="settings"><i class="fas fa-cog mr-1"></i> НАСТРОЙКИ</button>
       </div>
       <div class="nav-group">
-        <button class="action-btn" id="saveAllBtn" style="display:none;"><i class="fas fa-save mr-1"></i> Сохранить</button>
-        <button class="action-btn" id="exportBtn"><i class="fas fa-file-export mr-1"></i> Экспорт</button>
+        <button class="action-btn" id="saveAllBtn" style="display:none;"><i class="fas fa-save mr-1"></i> СОХРАНИТЬ</button>
+        <button class="action-btn" id="exportBtn"><i class="fas fa-file-export mr-1"></i> ЭКСПОРТ</button>
       </div>
     </div>
 
-    <!-- MAIN CONTENT -->
     <div class="content-area">
 
-      <!-- ============================================
-           TAB: КАЛЬКУЛЯТОР
-           ============================================ -->
-      <div id="tab-calculator" class="tab-content" style="display: block;">
+      <!-- TAB: КАЛЬКУЛЯТОР -->
+      <div id="tab-calculator" class="tab-content" style="display:block;">
 
-        <!-- Tender Info Section -->
         <div class="tender-info">
           <div class="section-title" style="margin-bottom: var(--space-lg);">
             <span>Информация о закупке</span>
@@ -43,324 +37,189 @@
           </div>
 
           <div class="info-row">
-            <span class="info-label">Этап:</span>
-            <span class="info-value" id="tenderStage">Этап подачи заявок до 15.01.2026 11:00 (РТС-тендер)</span>
-          </div>
-
-          <div class="info-row">
             <span class="info-label">Ссылка:</span>
-            <input type="text" id="tenderUrl" class="info-value" placeholder="https://zakupki.kontur.ru/..." style="border: none; background: transparent; font-family: var(--font-mono);">
-          </div>
-
-          <div class="info-row">
-            <span class="info-label">Закон/Тип:</span>
-            <span class="info-value" id="tenderLaw">44-ФЗ, Открытый конкурс в электронной форме</span>
+            <input type="text" id="tenderUrl" class="info-value" placeholder="https://zakupki.kontur.ru/..." style="border:none;background:transparent;font-family:var(--font-mono);" />
           </div>
 
           <div class="info-row">
             <span class="info-label">Заказчик:</span>
-            <input type="text" id="customerName" class="info-value" placeholder="Название организации" style="border: none; background: transparent;">
+            <input type="text" id="customerName" class="info-value" placeholder="Название организации" style="border:none;background:transparent;" />
           </div>
 
           <div class="info-row">
             <span class="info-label">ИНН/КПП:</span>
-            <div style="display: flex; gap: var(--space-md);">
-              <input type="text" id="customerInn" placeholder="ИНН" style="width: 120px; border: none; background: transparent; font-family: var(--font-mono);">
-              <input type="text" id="customerKpp" placeholder="КПП" style="width: 120px; border: none; background: transparent; font-family: var(--font-mono);">
+            <div style="display:flex;gap:var(--space-md);">
+              <input type="text" id="customerInn" placeholder="ИНН" style="width:120px;border:none;background:transparent;font-family:var(--font-mono);" />
+              <input type="text" id="customerKpp" placeholder="КПП" style="width:120px;border:none;background:transparent;font-family:var(--font-mono);" />
             </div>
           </div>
 
           <div class="info-row">
             <span class="info-label">Контакт:</span>
-            <div style="display: flex; gap: var(--space-md); flex: 1;">
-              <input type="text" id="contactName" placeholder="ФИО" style="flex: 1; border: none; background: transparent;">
-              <input type="tel" id="contactPhone" placeholder="Телефон" style="width: 150px; border: none; background: transparent;">
-              <input type="email" id="contactEmail" placeholder="Email" style="width: 200px; border: none; background: transparent;">
+            <div style="display:flex;gap:var(--space-md);flex:1;">
+              <input type="text" id="contactName" placeholder="ФИО" style="flex:1;border:none;background:transparent;" />
+              <input type="tel" id="contactPhone" placeholder="Телефон" style="width:150px;border:none;background:transparent;" />
+              <input type="email" id="contactEmail" placeholder="Email" style="width:200px;border:none;background:transparent;" />
             </div>
           </div>
 
           <div class="info-row">
             <span class="info-label">НМЦ:</span>
-            <input type="number" id="nmcValue" class="info-value" placeholder="0" style="border: none; background: transparent; font-family: var(--font-mono); text-align: right;">
+            <input type="number" id="nmcValue" class="info-value" placeholder="0" style="border:none;background:transparent;font-family:var(--font-mono);text-align:right;" />
           </div>
 
           <div class="info-row">
             <span class="info-label">Обеспечение заявки:</span>
-            <div style="display: flex; align-items: center; gap: var(--space-sm);">
-              <input type="number" id="bidSecurity" placeholder="0" style="width: 100px; border: none; background: transparent; font-family: var(--font-mono);">
-              <span id="bidSecurityCalc" style="color: var(--text-muted); font-size: 12px;"></span>
+            <div style="display:flex;align-items:center;gap:var(--space-sm);">
+              <input type="number" id="bidSecurity" placeholder="0" style="width:120px;border:none;background:transparent;font-family:var(--font-mono);" />
+              <span id="bidSecurityCalc" style="color:var(--text-muted);font-size:12px;"></span>
             </div>
           </div>
 
           <div class="info-row">
             <span class="info-label">Обеспечение контракта:</span>
-            <div style="display: flex; align-items: center; gap: var(--space-sm);">
-              <input type="number" id="contractSecurity" placeholder="0" style="width: 100px; border: none; background: transparent; font-family: var(--font-mono);">
-              <span id="contractSecurityCalc" style="color: var(--text-muted); font-size: 12px;"></span>
+            <div style="display:flex;align-items:center;gap:var(--space-sm);">
+              <input type="number" id="contractSecurity" placeholder="0" style="width:120px;border:none;background:transparent;font-family:var(--font-mono);" />
+              <span id="contractSecurityCalc" style="color:var(--text-muted);font-size:12px;"></span>
             </div>
           </div>
 
           <div class="info-row">
             <span class="info-label">Тариф площадки:</span>
-            <input type="number" id="platformTariff" value="6000" style="width: 100px; border: none; background: transparent; font-family: var(--font-mono);">
+            <input type="number" id="platformTariff" value="6000" style="width:120px;border:none;background:transparent;font-family:var(--font-mono);" />
           </div>
 
           <div class="info-row">
-            <span class="info-label">Цена часа (средняя):</span>
-            <input type="number" id="avgRate" step="0.01" placeholder="264.00" style="width: 100px; border: none; background: transparent; font-family: var(--font-mono);">
-          </div>
-
-          <div class="info-row">
-            <span class="info-label">Общее кол-во ЧЧ:</span>
-            <input type="number" id="totalHours" placeholder="69696" style="width: 100px; border: none; background: transparent; font-family: var(--font-mono);">
-          </div>
-
-          <div class="info-row">
-            <span class="info-label">Срок оказания услуг:</span>
-            <div style="display: flex; gap: var(--space-sm); align-items: center;">
-              <input type="date" id="serviceStart" style="border: none; background: transparent;">
+            <span class="info-label">Срок услуг:</span>
+            <div style="display:flex;gap:var(--space-sm);align-items:center;">
+              <input type="date" id="serviceStart" style="border:none;background:transparent;" />
               <span>-</span>
-              <input type="date" id="serviceEnd" style="border: none; background: transparent;">
-              <input type="number" id="serviceMonths" placeholder="8" readonly style="width: 60px; border: none; background: transparent; font-family: var(--font-mono);">
+              <input type="date" id="serviceEnd" style="border:none;background:transparent;" />
+              <input type="number" id="serviceMonths" placeholder="12" style="width:70px;border:none;background:transparent;font-family:var(--font-mono);text-align:right;" />
               <span>мес</span>
             </div>
           </div>
 
-          <div class="info-row">
-            <span class="info-label">Адреса объектов:</span>
-            <textarea id="addresses" rows="3" placeholder="Адрес 1&#10;Адрес 2&#10;Адрес 3" style="flex: 1; border: none; background: transparent; resize: vertical;"></textarea>
-          </div>
-
-          <div class="info-row">
-            <span class="info-label">Комментарий:</span>
-            <textarea id="comments" rows="2" placeholder="Комментарии к тендеру (автосохранение)" style="flex: 1; border: none; background: transparent; resize: vertical;"></textarea>
-          </div>
-        </div>
-
-        <!-- Calculator Section -->
-        <div class="section">
-          <div class="section-title">Калькулятор</div>
-
-          <div style="margin-bottom: var(--space-lg);">
-            <h4 style="margin-bottom: var(--space-md); color: var(--text-primary);">Расчет охраны</h4>
-            <div style="background: var(--bg-tertiary); padding: var(--space-lg); border-radius: var(--radius-md); font-family: var(--font-mono); font-size: 16px;">
-              <div id="securityFormula" style="margin-bottom: var(--space-sm);">
-                24 × 12 × 8 × 264,00 = 18 399 744,00
-              </div>
-              <div style="color: var(--text-muted); font-size: 14px;">
-                (постов × месяцев × часов в сутки × ставка)
-              </div>
-            </div>
-          </div>
-
-          <div style="margin-bottom: var(--space-lg);">
-            <h4 style="margin-bottom: var(--space-md); color: var(--text-primary);">Дополнительные расходы</h4>
-            <div style="background: var(--bg-tertiary); padding: var(--space-lg); border-radius: var(--radius-md); font-family: var(--font-mono); font-size: 16px;">
-              <div id="extraFormula" style="margin-bottom: var(--space-sm);">
-                500,00 × 8 × 12 = 48 000,00
-              </div>
-              <div style="color: var(--text-muted); font-size: 14px;">
-                (расход × месяцев × период)
-              </div>
-            </div>
-          </div>
-
-          <div class="summary-card">
-            <div class="summary-grid">
-              <div class="summary-item">
-                <div class="metric-label">ИТОГО</div>
-                <div class="metric-value" id="grandTotalContract">18 447 744,00</div>
+          <div class="info-row" style="align-items:flex-start;">
+            <span class="info-label">Комментарии:</span>
+            <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+              <div id="dealCommentsList" class="collapse-content" style="max-height:180px;overflow:auto;padding:0;border:none;"></div>
+              <div style="display:flex;gap:8px;">
+                <input type="text" id="dealCommentInput" placeholder="Написать комментарий" style="flex:1;" />
+                <button class="btn-secondary" id="addCommentBtn">Добавить</button>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Schemes Section -->
         <div class="section">
-          <div class="section-title">Расчеты</div>
+          <div class="section-title">
+            <span>Охрана (строки)</span>
+            <button class="btn-icon" id="addCalcRowBtn"><i class="fas fa-plus"></i></button>
+          </div>
 
-          <table class="data-grid" style="margin-bottom: var(--space-lg);">
+          <table class="data-grid">
             <thead>
               <tr>
-                <th>Схема</th>
-                <th>Рентабельность</th>
-                <th>Прибыль наличными</th>
-                <th>Прибыль безнал</th>
-                <th>ИТОГО</th>
-                <th>НДС</th>
-                <th>Размер НДС</th>
-                <th>Средняя ставка</th>
-                <th>Отпуск</th>
-                <th>Отпуск НОО/Бух/ОЛРР</th>
-                <th>Расходы</th>
-                <th>НДС 7%/НДС 22%</th>
-                <th>УСН 6%/НДС 22%</th>
-                <th>Снятие ЗП с р/с</th>
-                <th>Комиссия банка</th>
-                <th>Снятие дивидендов на ЗП</th>
-                <th>НДФЛ с дивидендов</th>
-                <th>НДС к возмещению</th>
-                <th>Налог на прибыль</th>
-                <th>Снятие наличных</th>
-                <th>Комиссия</th>
-                <th>НДС входящий</th>
-                <th>Взять расходы</th>
-                <th>Налоги</th>
-                <th>НДФЛ 13%</th>
-                <th>ФСС и ПФР 30,2%</th>
+                <th>Позиция</th>
+                <th class="text-center">Кол-во</th>
+                <th class="text-center">ЧЧ/мес</th>
+                <th class="text-center">Ч/смена</th>
+                <th class="text-center">Мес</th>
+                <th class="text-right">₽/час (клиент)</th>
+                <th class="text-right">₽/смена (наша)</th>
+                <th class="text-right">Выручка/мес</th>
+                <th class="text-right">ФОТ/мес</th>
+                <th class="text-right">Итого</th>
+                <th></th>
               </tr>
             </thead>
-            <tbody id="schemesTableBody">
-              <tr>
-                <td>БЕЛ УСН</td>
-                <td id="rentBELUSN">28,00%</td>
-                <td>645 184</td>
-                <td>759 040</td>
-                <td>18 447 744,00</td>
-                <td>1 205 768,97</td>
-                <td>7</td>
-                <td>137 250</td>
-                <td>10 930</td>
-                <td>239</td>
-                <td>1 544 840</td>
-                <td>1 205 769</td>
-                <td>65 887</td>
-                <td>151 419</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>75 187</td>
-                <td>22 626</td>
-                <td>52 562</td>
-              </tr>
-              <tr>
-                <td>СЕР УСН</td>
-                <td id="rentSERUSN">29,33%</td>
-                <td>675 729</td>
-                <td>794 976</td>
-                <td>18 447 744,00</td>
-                <td>1 205 768,97</td>
-                <td>7</td>
-                <td>137 250</td>
-                <td>10 930</td>
-                <td>239</td>
-                <td>1 508 904</td>
-                <td>1 205 769</td>
-                <td>65 887</td>
-                <td>39 150</td>
-                <td>-</td>
-                <td>112 269</td>
-                <td>19 812</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>19 440</td>
-                <td>5 850</td>
-                <td>13 590</td>
-              </tr>
-              <tr>
-                <td>БЕЛ НДС</td>
-                <td id="rentBELNDS">34,30%</td>
-                <td>7 208 207</td>
-                <td>8 480 243</td>
-                <td>21 014 830,65</td>
-                <td>3 781 160,39</td>
-                <td>22</td>
-                <td>137 250</td>
-                <td>10 930</td>
-                <td>239</td>
-                <td>8 294 466</td>
-                <td>-</td>
-                <td>-</td>
-                <td>151 419</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>8 399</td>
-                <td>4 240 122</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>75 187</td>
-                <td>22 626</td>
-                <td>52 562</td>
-              </tr>
-              <tr>
-                <td>СЕР НДС</td>
-                <td id="rentSERNDS">51,60%</td>
-                <td>10 844 209</td>
-                <td>12 757 893</td>
-                <td>21 014 830,65</td>
-                <td>3 789 559,63</td>
-                <td>22</td>
-                <td>137 250</td>
-                <td>10 930</td>
-                <td>239</td>
-                <td>8 256 938</td>
-                <td>-</td>
-                <td>-</td>
-                <td>39 150</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>8 399</td>
-                <td>4 252 631</td>
-                <td>112 269</td>
-                <td>31 666</td>
-                <td>25 955</td>
-                <td>117 979</td>
-                <td>19 440</td>
-                <td>5 850</td>
-                <td>13 590</td>
-              </tr>
-              <tr>
-                <td>ИП НДС</td>
-                <td id="rentIPNDS">51,58%</td>
-                <td>10 839 228</td>
-                <td>12 752 033</td>
-                <td>21 014 830,65</td>
-                <td>3 789 559,63</td>
-                <td>22</td>
-                <td>137 250</td>
-                <td>10 930</td>
-                <td>239</td>
-                <td>8 262 797</td>
-                <td>-</td>
-                <td>4 054 829</td>
-                <td>39 150</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>8 399</td>
-                <td>4 250 678</td>
-                <td>112 269</td>
-                <td>19 812</td>
-                <td>6 290</td>
-                <td>125 792</td>
-                <td>19 440</td>
-                <td>5 850</td>
-                <td>13 590</td>
-              </tr>
-            </tbody>
+            <tbody id="securityRowsBody"></tbody>
           </table>
         </div>
 
+        <div class="section">
+          <div class="section-title">
+            <span>Допрасходы (строки)</span>
+            <button class="btn-icon" id="addExtraRowBtn"><i class="fas fa-plus"></i></button>
+          </div>
+
+          <table class="data-grid">
+            <thead>
+              <tr>
+                <th>Название</th>
+                <th class="text-center">Кол-во</th>
+                <th class="text-right">Цена</th>
+                <th class="text-center">Ед.</th>
+                <th class="text-center">НДС</th>
+                <th class="text-center">Период</th>
+                <th class="text-right">Итого</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="extraRowsBody"></tbody>
+          </table>
+
+          <div class="summary-card" style="margin-top: var(--space-lg);">
+            <div class="summary-grid">
+              <div class="summary-item">
+                <div class="summary-label">ЧЧ/мес</div>
+                <div class="summary-value" id="totalHoursCalc">0,00</div>
+              </div>
+              <div class="summary-item">
+                <div class="summary-label">Постов</div>
+                <div class="summary-value" id="totalPeopleCalc">0</div>
+              </div>
+              <div class="summary-item">
+                <div class="summary-label">Средняя ставка</div>
+                <div class="summary-value" id="avgRateCalc">0,00</div>
+              </div>
+              <div class="summary-item">
+                <div class="summary-label">Итого/мес (охрана+ежемес допы)</div>
+                <div class="summary-value" id="totalAmountCalc">0,00</div>
+              </div>
+              <div class="summary-item">
+                <div class="summary-label">Допы ежемес</div>
+                <div class="summary-value" id="extraTotalCalc">0,00</div>
+              </div>
+              <div class="summary-item">
+                <div class="summary-label">Допы разово</div>
+                <div class="summary-value" id="extraOnceCalc">0,00</div>
+              </div>
+              <div class="summary-item">
+                <div class="summary-label">ИТОГО по контракту</div>
+                <div class="summary-value highlight" id="grandTotalContract">0,00</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">
+            <span>Схемы (5 колонок)</span>
+            <button class="btn-icon" id="toggleSchemesBtn" title="Показать/скрыть детали"><i class="fas fa-chevron-down"></i></button>
+          </div>
+
+          <table class="data-grid schemes-table">
+            <thead>
+              <tr>
+                <th style="width:140px;">Метрика</th>
+                <th>БЕЛ УСН</th>
+                <th>СЕР УСН</th>
+                <th>БЕЛ НДС</th>
+                <th>СЕР НДС</th>
+                <th>ИП НДС</th>
+              </tr>
+            </thead>
+            <tbody id="schemesMatrixBody"></tbody>
+          </table>
+        </div>
 
       </div>
 
-      <!-- ========== CRM МОДУЛЬ ========== -->
+      <!-- TAB: CRM -->
       <div id="tab-crm" class="tab-content" style="display:none;">
-        <div style="display: flex; gap: 6px; margin-bottom: 12px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 6px;">
+        <div style="display:flex;gap:6px;margin-bottom:12px;border-bottom:1px solid var(--border-subtle);padding-bottom:6px;">
           <button class="tab-btn active" data-subtab="deals"><i class="fas fa-handshake mr-1"></i> Сделки</button>
           <button class="tab-btn" data-subtab="tasks"><i class="fas fa-tasks mr-1"></i> Задачи</button>
           <button class="tab-btn" data-subtab="counterparties"><i class="fas fa-building mr-1"></i> Контрагенты</button>
@@ -368,27 +227,16 @@
         </div>
 
         <div id="crm-deals" class="crm-subtab" style="display:block;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <input type="text" id="dealsSearch" placeholder="🔍 Поиск сделок" style="flex: 1; margin-right: 10px;">
-            <select id="dealsSort" style="width: 120px;">
-              <option value="deadline">Дедлайн</option>
-              <option value="profit">Рент.</option>
-              <option value="nmc">НМЦ</option>
-            </select>
-          </div>
           <div id="dealsContainer"></div>
         </div>
 
         <div id="crm-tasks" class="crm-subtab">
-          <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-            <input type="text" id="tasksSearch" placeholder="🔍 Поиск задач" style="flex: 1; margin-right: 10px;">
-            <button class="btn-primary" id="addTaskBtn"><i class="fas fa-plus mr-1"></i> Задача</button>
-          </div>
+          <div style="padding: 12px; color: var(--text-muted);">MVP: задачи позже.</div>
           <div id="tasksContainer"></div>
         </div>
 
         <div id="crm-counterparties" class="crm-subtab">
-          <input type="text" id="counterpartiesSearch" placeholder="🔍 Поиск по ИНН или названию" style="width: 100%; margin-bottom: 10px;">
+          <input type="text" id="counterpartiesSearch" placeholder="Поиск по ИНН или названию" style="width:100%;margin-bottom:10px;" />
           <table class="data-grid" id="counterpartiesTable">
             <thead><tr><th>Название</th><th>ИНН</th><th>КПП</th><th>Сделок</th><th>Активность</th></tr></thead>
             <tbody id="counterpartiesBody"></tbody>
@@ -396,7 +244,7 @@
         </div>
 
         <div id="crm-managers" class="crm-subtab">
-          <button class="btn-primary" id="addManagerBtn" style="margin-bottom: 10px;"><i class="fas fa-user-plus mr-1"></i> Менеджер</button>
+          <div style="padding: 12px; color: var(--text-muted);">MVP: менеджеры позже.</div>
           <table class="data-grid" id="managersTable">
             <thead><tr><th>ФИО</th><th>Должность</th><th>Телефон</th><th>Email</th><th></th></tr></thead>
             <tbody id="managersBody"></tbody>
@@ -412,62 +260,96 @@
             <button class="btn-icon" id="addPriceRowBtn"><i class="fas fa-plus"></i></button>
           </div>
           <table class="data-grid">
-            <thead><tr><th>Название</th><th>Регион</th><th style="text-align:center">Ор.</th><th>Вахта</th><th>ЧЧ</th><th>Ставка</th><th style="text-align:right">Итого</th><th></th></tr></thead>
+            <thead>
+              <tr>
+                <th>Название</th>
+                <th>Регион</th>
+                <th class="text-center">Ор.</th>
+                <th class="text-center">Ч/смена</th>
+                <th class="text-center">ЧЧ/мес</th>
+                <th class="text-right">₽/час</th>
+                <th class="text-right">₽/смена</th>
+                <th class="text-right">Итого/мес</th>
+                <th></th>
+              </tr>
+            </thead>
             <tbody id="priceTableBody"></tbody>
           </table>
         </div>
+
         <div class="section">
           <div class="section-title">
             <span><i class="fas fa-money-bill mr-1"></i> Прайс: доп. расходы</span>
             <button class="btn-icon" id="addExtraPriceRowBtn"><i class="fas fa-plus"></i></button>
           </div>
           <table class="data-grid">
-            <thead><tr><th>Название</th><th>Цена</th><th>Тип</th><th></th></tr></thead>
+            <thead>
+              <tr>
+                <th>Название</th>
+                <th class="text-right">Цена</th>
+                <th class="text-center">Ед.</th>
+                <th class="text-center">НДС</th>
+                <th class="text-center">Период</th>
+                <th></th>
+              </tr>
+            </thead>
             <tbody id="extraPriceTableBody"></tbody>
           </table>
         </div>
-        <div style="text-align: right;">
+
+        <div style="text-align:right;">
           <button class="btn-primary" id="savePriceBtn"><i class="fas fa-check-circle mr-1"></i> Сохранить прайс</button>
         </div>
       </div>
 
       <!-- TAB: НАСТРОЙКИ -->
       <div id="tab-settings" class="tab-content">
+
         <div class="section">
-          <div class="section-title"><span><i class="fas fa-sliders-h mr-1"></i> Переменные для расчетов</span></div>
-          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
-            <div><label style="font-size:9px;color:var(--text-muted);">МРОТ</label><input type="number" id="var_mrot" value="27093"></div>
-            <div><label style="font-size:9px;color:var(--text-muted);">НДФЛ (%)</label><input type="number" id="var_ndfl" value="13"></div>
-            <div><label style="font-size:9px;color:var(--text-muted);">УСН (%)</label><input type="number" id="var_usn" value="6"></div>
-            <div><label style="font-size:9px;color:var(--text-muted);">ОСН (%)</label><input type="number" id="var_osn" value="22"></div>
-            <div><label style="font-size:9px;color:var(--text-muted);">Налог на прибыль (%)</label><input type="number" id="var_profit_tax" value="25"></div>
-            <div><label style="font-size:9px;color:var(--text-muted);">Дивиденды (коэф.)</label><input type="number" id="var_dividend" value="0.85" step="0.01"></div>
+          <div class="section-title"><span><i class="fas fa-sliders-h mr-1"></i> Общие настройки</span></div>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
+            <div>
+              <label style="font-size:9px;color:var(--text-muted);">Мин. НМЦ для парсера</label>
+              <input type="number" id="minPriceVal" value="350" />
+            </div>
+            <div>
+              <label style="font-size:9px;color:var(--text-muted);">Тема</label>
+              <select id="themeSelect">
+                <option value="light">light</option>
+                <option value="dark">dark</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:9px;color:var(--text-muted);">VAT mode default</label>
+              <select id="vatModeDefault">
+                <option value="outside">outside</option>
+                <option value="inside">inside</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:9px;color:var(--text-muted);">Telegram chat id</label>
+              <input type="text" id="tgChatId" placeholder="например: 123456789" />
+            </div>
           </div>
         </div>
 
         <div class="section">
-          <div class="section-title"><span><i class="fab fa-telegram-plane mr-1"></i> Telegram Bot</span></div>
-          <div style="display: flex; flex-direction: column; gap: 8px;">
-            <div><input type="text" id="tgUser" placeholder="Имя пользователя (@)"></div>
-            <div><input type="password" id="tgToken" placeholder="API Token"></div>
+          <div class="section-title"><span><i class="fas fa-scroll mr-1"></i> calcspec.json (редактирование)</span></div>
+          <textarea id="calcspecTextArea" rows="14" style="font-size: 11px; font-family: var(--font-mono);"></textarea>
+          <div style="margin-top: 8px; color: var(--text-muted); font-size: 11px;">
+            Формат: JSON. При ошибке JSON будут использоваться значения по умолчанию из src/calcspec.json.
           </div>
         </div>
 
-        <div class="section">
-          <div class="section-title"><span><i class="fas fa-scroll mr-1"></i> Спецификация</span></div>
-          <textarea id="calcSpecArea" rows="8" readonly style="font-size: 10px; color: var(--text-muted);"></textarea>
-        </div>
-
-        <div style="text-align: right;">
+        <div style="text-align:right;">
           <button class="btn-primary" id="saveSettingsBtn"><i class="fas fa-save mr-1"></i> Сохранить настройки</button>
         </div>
       </div>
 
-    </div> <!-- Конец .content-area -->
+    </div>
 
-  </div> <!-- Конец .container -->
+  </div>
 
-  <!-- SCRIPTS -->
   <script src="rules.js"></script>
   <script src="data.js"></script>
   <script src="calculator.js"></script>

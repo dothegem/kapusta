@@ -1,11 +1,11 @@
 {
   "manifest_version": 3,
   "name": "CAPUSTA",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Калькулятор охраны с автопарсингом и CRM для тендеров",
   "web_accessible_resources": [
     {
-      "resources": ["src/calc_spec.yaml"],
+      "resources": ["src/calcspec.json"],
       "matches": ["<all_urls>"]
     }
   ],
