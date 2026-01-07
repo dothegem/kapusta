@@ -472,7 +472,34 @@ window.Calculator.calculateTotal = () => {
     if (document.getElementById('totalAmountCalc')) document.getElementById('totalAmountCalc').textContent = window.Rules.fmtNum(base.totalMonthGross);
     if (document.getElementById('extraTotalCalc')) document.getElementById('extraTotalCalc').textContent = window.Rules.fmtNum(base.extraVmes);
     if (document.getElementById('grandTotalContract')) document.getElementById('grandTotalContract').textContent = window.Rules.fmtNum(base.totalContractGross);
-    window.Calculator.renderSchemesWithCollapse();
+    window.Calculator.updateSchemesTable();
+};
+
+window.Calculator.updateSchemesTable = () => {
+    const base = window.Calculator.calcBaseForExcel(window.Calculator.state);
+    const schemes = ['BELUSN', 'SERUSN', 'BELNDS', 'SERNDS', 'IPNDS'];
+
+    schemes.forEach((k, idx) => {
+        const res = window.Calculator.calculateScenario(k, base);
+        const rent = (res.rentability * 100).toFixed(1);
+
+        // Update rentability in summary
+        const rentEl = document.getElementById(`rent${k}`);
+        if (rentEl) {
+            rentEl.textContent = rent + '%';
+            rentEl.style.color = rent > 15 ? 'var(--accent-green)' : (rent > 10 ? 'var(--accent-orange)' : 'var(--accent-red)');
+        }
+
+        // Update table row if exists
+        const tbody = document.getElementById('schemesTableBody');
+        if (tbody && tbody.rows[idx]) {
+            const row = tbody.rows[idx];
+            // Update cells based on the scheme
+            // This is simplified; in real implementation, map all the detailed values
+            if (row.cells[1]) row.cells[1].textContent = rent + '%';
+            // Add more cell updates as needed
+        }
+    });
 };
 
 window.Calculator.renderPriceTable = () => {

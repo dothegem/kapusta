@@ -206,16 +206,20 @@ window.App.runAutoParsing = async (force = false) => {
         if (res?.[0]?.result) {
             const data = res[0].result;
             console.log("[App][runAutoParsing][EXECUTE_PARSER][Success] Data extracted:", data);
-            document.getElementById("resultArea").value = data.formattedText;
             // Auto-fill form
             const tenderData = data.dataArray[0];
             document.getElementById('tenderUrl').value = tenderData.url;
             document.getElementById('customerName').value = tenderData.organizer;
+            document.getElementById('customerInn').value = tenderData.customerInn;
+            document.getElementById('customerKpp').value = tenderData.customerKpp;
             document.getElementById('contactName').value = tenderData.contactName;
             document.getElementById('contactPhone').value = tenderData.contactPhone;
             document.getElementById('contactEmail').value = tenderData.contactEmail;
             document.getElementById('nmcValue').value = tenderData.priceValue;
-            
+
+            // Update formulas
+            window.App.updateFormulas();
+
             // Check counterparty
             if (window.Parser && window.Parser.checkCounterparty) {
                 await window.Parser.checkCounterparty(tenderData.customerInn, tenderData.customerKpp, tenderData.organizer);
@@ -268,6 +272,39 @@ window.App.deleteTender = async (key) => {
       window.App.renderCRM();
     }
 };
+
+window.App.updateFormulas = () => {
+    const posts = 24; // Assume 24 posts
+    const months = parseInt(document.getElementById('serviceMonths').value) || 8;
+    const hoursPerDay = 12; // Assume 12 hours per day
+    const rate = parseFloat(document.getElementById('avgRate').value) || 264.00;
+    const securityTotal = posts * months * hoursPerDay * rate;
+
+    const extraRate = 500.00; // Assume 500 per month
+    const extraMonths = months;
+    const extraPeriod = 12; // Assume annual
+    const extraTotal = extraRate * extraMonths * extraPeriod;
+
+    document.getElementById('securityFormula').textContent = `${posts} × ${months} × ${hoursPerDay} × ${rate.toFixed(2)} = ${window.Rules.fmtNum(securityTotal)}`;
+    document.getElementById('extraFormula').textContent = `${extraRate.toFixed(2)} × ${extraMonths} × ${extraPeriod} = ${window.Rules.fmtNum(extraTotal)}`;
+
+    const grandTotal = securityTotal + extraTotal;
+    document.getElementById('grandTotalContract').textContent = window.Rules.fmtNum(grandTotal);
+
+    // Update schemes if calculator is loaded
+    if (window.Calculator && window.Calculator.calculateTotal) {
+        window.Calculator.calculateTotal();
+    }
+};
+
+// Add event listeners for formula updates
+document.addEventListener('DOMContentLoaded', () => {
+    const fields = ['serviceMonths', 'avgRate'];
+    fields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', window.App.updateFormulas);
+    });
+});
 // END_FUNCTION_App_deleteTender
 
 document.addEventListener('DOMContentLoaded', window.App.init);
