@@ -19,9 +19,12 @@
     "https://zakupki.kontur.ru/*",
     "https://bidzaar.com/*"
   ],
-  "background": {
-    "service_worker": "src/background.js"
-  },
+  // DISABLED TEMPORARILY: Background worker was causing "Registration failed: Status code 15"
+  // because chrome.alarms is undefined without "alarms" permission.
+  // We don't need background polling yet. Will restore when implementing auto-check.
+  // "background": {
+  //   "service_worker": "src/background.js"
+  // },
   "action": {
     "default_popup": "src/popup.html",
     "default_icon": "src/icon.png"

@@ -2,6 +2,15 @@
 // VERSION: 2.2.0
 // PURPOSE: Service worker for extension defaults and alarms.
 
+// DISABLED (2026-01-08):
+// Chrome alarms logic is commented out because it caused "Service Worker Registration Failed (Status 15)"
+// due to missing "alarms" permission in manifest.
+//
+// TODO: When implementing background auto-parsing:
+// 1. Add "alarms" to manifest.json "permissions".
+// 2. Uncomment the logic below.
+
+/*
 const ALARM_NAME = 'check_tenders';
 const CHECK_INTERVAL = 60; // minutes
 
@@ -27,13 +36,13 @@ chrome.alarms.onAlarm.addListener((alarm) => {
     // TODO: background parsing later
   }
 });
+*/
 
+// Keep simple message listener if needed for debug, otherwise this file is inactive without manifest entry.
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  console.log('[Background] Message received:', request);
-
+  // console.log('[Background] Message received:', request);
   if (request.type === 'ping') {
     sendResponse({ status: 'ok', timestamp: Date.now() });
   }
-
   return false;
 });
