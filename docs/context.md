@@ -10,16 +10,16 @@
 4. **Data Persistence:** Fixed "Hard Reset" to be non-destructive for CRM data.
 5. **Configuration:** Extracted logic to `calcspec.json` with UI editor and validation.
 6. **Architecture:** Established `docs/` with Taxonomy and Guidelines.
+7. **Docs migration:** Migrated `.info/*` specs into `docs/` and deprecated `.info/`.
 
 ### 🚧 Current State
 - **Version:** v2.2.1
 - **Architecture:** Modular Monolith (App -> Calculator/Parser).
-- **Code Quality:** 
+- **Code Quality:**
   - `calculator.js` is nearing size limit (~600 lines).
   - `app.js` is clean (~400 lines).
 
 ### 📋 Next Steps (Backlog)
 - [ ] **Refactor:** Split `calculator.js` into `calc_core.js` and `calc_ui.js`.
-- [ ] **Feature:** Implement "Tasks" and "Managers" in CRM tab (currently stubs).
-- [ ] **Feature:** Add "Context Menu" for quick parsing without opening popup.
-- [ ] **Tech:** Implement true Event Bus for loose coupling between modules.
+- [ ] **Tech:** Implement a true plugin protocol + event bus (Core.registerPlugin).
+- [ ] **Feature:** Expand CRM tab (tasks, managers) beyond stubs.
