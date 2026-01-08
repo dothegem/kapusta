@@ -1,5 +1,5 @@
 // FILE: app.js
-// VERSION: 2.2.0
+// VERSION: 2.2.1
 // PURPOSE: Popup initialization, settings, export, and parsing.
 
 window.App = window.App || {};
@@ -8,18 +8,44 @@ window.App.isDirty = false;
 const STORAGE_SCHEMA_VERSION = '2026-01-08';
 
 window.App.hardResetIfNeeded = async () => {
-  const s = await chrome.storage.local.get(['storageSchemaVersion']);
-  if (s.storageSchemaVersion === STORAGE_SCHEMA_VERSION) return;
+  const all = await chrome.storage.local.get(null);
+  if (all.storageSchemaVersion === STORAGE_SCHEMA_VERSION) return;
 
-  // Hard reset (approved): no migrations
-  await chrome.storage.local.clear();
+  // Safe migration: do NOT wipe CRM drafts (tenderCalc_*) or price lists.
+  // Only remove legacy keys from old versions.
+  const legacyKeys = [
+    // old telegram settings
+    'tguser',
+    'tgtoken',
 
-  await chrome.storage.local.set({
-    storageSchemaVersion: STORAGE_SCHEMA_VERSION,
-    parserminprice: 350,
-    tgChatId: '',
-    theme: 'light'
-  });
+    // old tax variables block
+    'var_mrot',
+    'var_ndfl',
+    'var_usn',
+    'var_osn',
+    'var_profit_tax',
+    'var_dividend',
+
+    // old spec storage keys
+    'calcSpecArea',
+    'calc_spec_yaml',
+    'calcSpecYaml',
+    'calcSpec'
+  ];
+
+  const existingLegacy = legacyKeys.filter(k => Object.prototype.hasOwnProperty.call(all, k));
+  if (existingLegacy.length) {
+    await chrome.storage.local.remove(existingLegacy);
+  }
+
+  // Ensure defaults exist
+  const toSet = { storageSchemaVersion: STORAGE_SCHEMA_VERSION };
+  if (all.parserminprice === undefined) toSet.parserminprice = 350;
+  if (all.tgChatId === undefined) toSet.tgChatId = '';
+  if (all.theme === undefined) toSet.theme = 'light';
+  if (all.vatModeDefault === undefined) toSet.vatModeDefault = 'outside';
+
+  await chrome.storage.local.set(toSet);
 };
 
 window.App.applyTheme = (theme) => {
@@ -105,13 +131,24 @@ window.App.init = async () => {
   document.getElementById('saveSettingsBtn')?.addEventListener('click', async () => {
     const themeVal = document.getElementById('themeSelect')?.value || 'light';
     const vatModeVal = document.getElementById('vatModeDefault')?.value || 'outside';
+    const calcspecText = document.getElementById('calcspecTextArea')?.value || '';
+
+    // Validate JSON before saving
+    if (String(calcspecText).trim()) {
+      try {
+        JSON.parse(calcspecText);
+      } catch (e) {
+        alert('❌ calcspec.json: неверный JSON. Исправьте и попробуйте снова.');
+        return;
+      }
+    }
 
     await chrome.storage.local.set({
       parserminprice: parseFloat(document.getElementById('minPriceVal')?.value) || 350,
       tgChatId: document.getElementById('tgChatId')?.value || '',
       theme: themeVal,
       vatModeDefault: vatModeVal,
-      calcspecText: document.getElementById('calcspecTextArea')?.value || ''
+      calcspecText
     });
 
     window.App.applyTheme(themeVal);
