@@ -1,0 +1,94 @@
+<KnowledgeGraph>
+  <TenAGI_Extension_v2_1_1_Info>
+    <keywords>chrome-extension, calculator, crm, parsing, tender, security-agency</keywords>
+    <terms>
+      <term name="SchemeSet">Набор стратегий расчета налогов и прибыли (Белая/Серая/ИП)</term>
+      <term name="Calcspec">JSON-спецификация ставок и правил расчета</term>
+    </terms>
+    <annotation>
+      Browser extension for security agencies to calculate tender economics and manage CRM.
+    </annotation>
+    <BusinessScenarios>
+      <scenario name="CalculateTender">
+        User opens tender page -> Extension parses data -> User fills prices -> Ext calculates 5 schemes -> User exports result.
+      </scenario>
+      <scenario name="ManageCRM">
+        User saves calculation -> It appears in Deals list -> User can load or delete deals.
+      </scenario>
+    </BusinessScenarios>
+    <ProjectCrossLinks TYPE="MODULE_INTERACTIONS_OVERVIEW">
+       <Link TARGET="src_app_js_MODULE" TYPE="INITIATES" />
+       <Link TARGET="src_calculator_js_MODULE" TYPE="PERFORMS_CALC" />
+       <Link TARGET="src_rules_js_MODULE" TYPE="PROVIDES_CONFIG" />
+    </ProjectCrossLinks>
+  </TenAGI_Extension_v2_1_1_Info>
+
+  <src_app_js_MODULE FILE="src/app.js">
+     <TYPE>CORE_CONTROLLER</TYPE>
+     <keywords>init, storage, tabs, dirty-checking, export, crm, deal, tender</keywords>
+     <annotation>Main entry point. Initializes popup, handles tabs, storage, and events. Manages CRM Entities.</annotation>
+     <CrossLinks>
+        <Link TARGET="src_calculator_js_MODULE" TYPE="CALLS_INIT" />
+        <Link TARGET="src_rules_js_MODULE" TYPE="CALLS_LOAD_CONFIG" />
+        <Link TARGET="src_app_js_Deal_CLASS" TYPE="MANAGES_LIFECYCLE" />
+     </CrossLinks>
+     <src_app_js_init_FUNC NAME="init">
+        <TYPE>INIT_FUNCTION</TYPE>
+        <annotation>Async initialization of the app state.</annotation>
+     </src_app_js_init_FUNC>
+     <src_app_js_Deal_CLASS NAME="Deal">
+        <TYPE>ENTITY_MODEL</TYPE>
+        <annotation>Aggregate Root for Deal, Tender, Company. Implements State Machine.</annotation>
+     </src_app_js_Deal_CLASS>
+     <src_app_js_saveAll_FUNC NAME="saveAll">
+        <TYPE>PERSISTENCE_FUNCTION</TYPE>
+        <annotation>Saves Deal state to storage with transitions.</annotation>
+     </src_app_js_saveAll_FUNC>
+  </src_app_js_MODULE>
+
+  <src_calculator_js_MODULE FILE="src/calculator.js">
+     <TYPE>BUSINESS_LOGIC_MODULE</TYPE>
+     <keywords>calculation, schemes, scheme-set, ui-render, strategy</keywords>
+     <annotation>Core calculator logic implementing SchemeSet strategy and UI rendering.</annotation>
+     <CrossLinks>
+        <Link TARGET="src_rules_js_MODULE" TYPE="READS_CONSTANTS" />
+     </CrossLinks>
+     <src_calculator_js_calculateScheme_FUNC NAME="calculateScheme">
+        <TYPE>CORE_CALC_FUNCTION</TYPE>
+        <annotation>Dynamic calculation of a specific scheme based on calcspec configuration.</annotation>
+     </src_calculator_js_calculateScheme_FUNC>
+     <src_calculator_js_renderSchemesMatrix_FUNC NAME="renderSchemesMatrix">
+        <TYPE>UI_RENDER_FUNCTION</TYPE>
+        <annotation>Renders the comparison table of all configured schemes.</annotation>
+     </src_calculator_js_renderSchemesMatrix_FUNC>
+     <src_calculator_js_calcBaseForExcel_FUNC NAME="calcBaseForExcel">
+        <TYPE>DATA_AGGREGATION_FUNCTION</TYPE>
+        <annotation>Aggregates raw user inputs into base totals (Revenue, Salary, etc).</annotation>
+     </src_calculator_js_calcBaseForExcel_FUNC>
+  </src_calculator_js_MODULE>
+
+  <src_rules_js_MODULE FILE="src/rules.js">
+     <TYPE>CONFIG_MODULE</TYPE>
+     <keywords>configuration, constants, formatting, json-loader</keywords>
+     <annotation>Loads calcspec.json and provides global constants and formatters.</annotation>
+     <src_rules_js_loadConstants_FUNC NAME="loadConstants">
+        <TYPE>CONFIG_LOADER</TYPE>
+        <annotation>Parses calcspec and maps it to flat constants object.</annotation>
+     </src_rules_js_loadConstants_FUNC>
+     <src_rules_js_fmtNum_FUNC NAME="fmtNum">
+        <TYPE>HELPER_FUNCTION</TYPE>
+        <annotation>Formats numbers to RU locale.</annotation>
+     </src_rules_js_fmtNum_FUNC>
+  </src_rules_js_MODULE>
+
+  <src_parser_js_MODULE FILE="src/parser.js">
+     <TYPE>CONTENT_SCRIPT</TYPE>
+     <keywords>dom-parsing, regex, crm-check</keywords>
+     <annotation>Extracts tender data from web pages.</annotation>
+     <src_parser_js_extractData_FUNC NAME="extractData">
+        <TYPE>PARSER_FUNCTION</TYPE>
+        <annotation>Main extraction logic for Kontur/Bidzaar.</annotation>
+     </src_parser_js_extractData_FUNC>
+  </src_parser_js_MODULE>
+
+</KnowledgeGraph>

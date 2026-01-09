@@ -1,36 +1,89 @@
 {
-  "version": "2026-01-08",
-  "ui": {
-    "themeDefault": "light",
-    "vatModeDefault": "outside"
-  },
+  "version": "1.0.0",
   "constants": {
     "daysInMonth": 30.5,
-    "vacation": {
-      "avgDaysInMonth": 29.3,
-      "vacationDaysPerYear": 28,
-      "monthsInYear": 12
-    }
+    "avgDaysInMonth": 29.3,
+    "vacationDaysPerYear": 28,
+    "monthsInYear": 12
   },
   "rates": {
-    "ndfl": 0.13,
+    "vat": 0.22,
+    "vatUsn": 0.07,
     "usn": 0.06,
-    "vatLow": 0.07,
-    "vatHigh": 0.22,
+    "ndfl": 0.13,
+    "pfr": 0.30,
+    "fss": 0.002,
     "profitTax": 0.25,
-    "pfr": 0.22,
-    "fss": 0.029,
-    "foms": 0.051
+    "envelope": {
+      "whitePart": 0.85,
+      "cashoutCommission": 0.15
+    },
+    "dividends": {
+      "taxRate": 0.15
+    }
   },
   "cashout": {
-    "dividendNet": 0.85,
-    "dividendTax": 0.13,
-    "cashoutCommission": 0.15,
-    "cashoutRisk": 0.12
+    "defaultFeeRate": 0.28,
+    "whiteToCashShare": 0.78,
+    "cashShare": 0.22
   },
-  "defaults": {
-    "mrot": 27093,
-    "officialSalary": 27093,
-    "admRate": 0
+  "schemes": {
+    "BELUSN": {
+      "vatMode": "outside",
+      "usnRateKey": "usn",
+      "vatRateKey": "vatUsn",
+      "usesGrossUp": true
+    },
+    "SERUSN": {
+      "vatMode": "outside",
+      "usnRateKey": "usn",
+      "vatRateKey": "vatUsn",
+      "usesGrossUp": true,
+      "usesGreySalary": true
+    },
+    "BELNDS": {
+      "vatMode": "inside",
+      "vatRateKey": "vat",
+      "usesGrossUp": true
+    },
+    "SERNDS": {
+      "vatMode": "inside",
+      "vatRateKey": "vat",
+      "usesGrossUp": true,
+      "usesGreySalary": true
+    },
+    "IPNDS": {
+      "vatMode": "inside",
+      "vatRateKey": "vat",
+      "usesIpFlow": true
+    }
+  },
+  "guardPrice": {
+    "fields": [
+      { "id": "title", "type": "text" },
+      { "id": "description", "type": "text" },
+      { "id": "hoursPerDay", "type": "number" },
+      { "id": "hoursPerMonth", "type": "number" },
+      { "id": "months", "type": "number" },
+      { "id": "posts", "type": "number" },
+      { "id": "customerHourlyRate", "type": "number" },
+      { "id": "ourShiftRate", "type": "number" },
+      { "id": "address", "type": "text" },
+      { "id": "uniformType", "type": "enum", "options": ["summer", "winter", "mixed"] },
+      { "id": "totalPerMonth", "type": "number" },
+      { "id": "total", "type": "number" }
+    ]
+  },
+  "expensePrice": {
+    "fields": [
+      { "id": "title", "type": "text" },
+      { "id": "unit", "type": "enum", "options": ["unit", "month", "year", "percent"] },
+      { "id": "vatType", "type": "enum", "options": ["none", "vatUsn", "vatOsn"] },
+      { "id": "periodicity", "type": "enum", "options": ["once", "monthly"] },
+      { "id": "price", "type": "number" },
+      { "id": "qty", "type": "number" },
+      { "id": "total", "type": "number" },
+      { "id": "priceItemId", "type": "text" }
+    ]
   }
 }

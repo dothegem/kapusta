@@ -1,12 +1,30 @@
-// FILE: calculator.js
-// VERSION: 2.2.0
-// PURPOSE: Calculator UI + 5-scheme computations.
+// FILE: src/calculator.js
+// VERSION: 3.0.0
+// START_MODULE_CONTRACT:
+// PURPOSE: Основной модуль калькулятора. Реализует UI, управление состоянием и расчет схем (SchemeSet) на основе calcspec.
+// SCOPE: UI Калькулятора, Расчеты Схем (SchemeSet Strategy).
+// INPUT: User Input (DOM), Rules.constants, Rules.calcspec.
+// OUTPUT: Расчетная таблица, сравнение схем, экспорт данных.
+// KEYWORDS_MODULE: [DOMAIN(10): Calculator; PATTERN(9): SchemeSet; TECH(8): VanillaJS]
+// LINKS_TO_MODULE: [src/rules.js, src/app.js]
+// LINKS_TO_SPECIFICATION: [docs/08_CALC_SCHEMES_IMPL_AND_SCHEMASET.md]
+// END_MODULE_CONTRACT
+// START_MODULE_MAP:
+// FUNC 10 [Расчитывает конкретную схему по спецификации] => calculateScheme
+// FUNC 9 [Рендерит таблицу сравнения схем] => renderSchemesMatrix
+// FUNC 8 [Агрегирует базовые показатели из строк ввода] => calcBaseForExcel
+// FUNC 7 [Инициализация калькулятора] => init
+// OBJECT 9 [Состояние калькулятора (строки, цены, комменты)] => state
+// END_MODULE_MAP
+// START_USE_CASES:
+// - [CalculateAll]: User (Input) -> UpdateRows -> CalculateBase -> RenderMatrix
+// - [ExportDeal]: User (Click) -> CollectData -> CopyJSON
+// END_USE_CASES
 
 window.Calculator = window.Calculator || {
   state: {
     rows: [],
     extraRows: [],
-    schemes: {},
     priceList: [],
     extraPriceList: [],
     currentTenderId: null,
@@ -22,160 +40,213 @@ const parseNumRu = (str) => {
   return parseFloat(clean) || 0;
 };
 
-// =====================
-// 5 scenarios
-// =====================
-window.Calculator.CONFIG = {
-  scenarios: {
-    BELUSN: {
-      name: 'БЕЛ УСН',
-      calculate: (base, c) => {
-        const revenue = base.totalContractGross;
-        const fotReal = base.totalSalaryByAvgRateMonth * 12;
+// START_FUNCTION_calculateScheme
+// START_CONTRACT:
+// PURPOSE: Универсальная функция расчета показателей схемы на основе конфигурации (Strategy Pattern).
+// INPUTS:
+// - schemeCode [String]: Код схемы (BELUSN, SERNDS...).
+// - base [Object]: Базовые агрегированные данные (выручка, ФОТ реальный и т.д.).
+// - c [Object]: Глобальные константы (ставки налогов и т.д.).
+// - spec [Object]: Спецификация схемы из calcspec.json (флаги, режимы НДС).
+// OUTPUTS:
+// - [Object]: Результат расчета схемы (fields: revenue, margin, profitNet, taxes, etc.).
+// KEYWORDS: [PATTERN(10): Strategy; DOMAIN(10): TaxCalculation]
+// END_CONTRACT
+window.Calculator.calculateScheme = (schemeCode, base, c, spec) => {
+  // 1. Setup & Defaults
+  const s = spec || {};
+  const vatMode = s.vatMode || 'outside'; // 'outside' (USN), 'inside' (General/OSN)
+  const isGrey = !!s.usesGreySalary;
+  const isIpFlow = !!s.usesIpFlow;
+  
+  // 2. Revenue Calculation
+  // base.totalContractGross - это полная сумма контракта (то, что платит клиент)
+  const revenueTotal = base.totalContractGross; 
+  let revenueBase = revenueTotal; // Без НДС
+  let vatOut = 0;
 
-        const fotOfficial = fotReal / c.payrollNetFactor;
-        const ndfl = fotOfficial * c.ndflRatePercent / 100;
-        const pfr = fotOfficial * c.pfrRatePercent / 100;
-        const fss = fotOfficial * c.fssRatePercent / 100;
-        const payrollTaxes = ndfl + pfr + fss;
+  if (vatMode === 'inside') {
+    // НДС внутри (20%)
+    const vatRate = (c[s.vatRateKey] || c.osnRatePercent || 20) / 100;
+    revenueBase = revenueTotal / (1 + vatRate);
+    vatOut = revenueTotal - revenueBase;
+  } else {
+    // УСН (НДС сверху нет, или он не выделяется)
+    // revenueBase = revenueTotal
+  }
 
-        const vatDeduction = revenue / (100 + c.osnLowRatePercent) * c.osnLowRatePercent;
-        const usnTax = (revenue - vatDeduction) * c.usnRatePercent / 100;
+  // 3. Payroll (FOT) Calculation
+  const fotReal = base.totalSalaryByAvgRateMonth * 12; // Реальный ФОТ в год
+  let fotOfficial = 0;
 
-        const netSalary = fotOfficial - ndfl;
-        const totalExpenses = vatDeduction + usnTax + payrollTaxes + netSalary;
-        const profitBeforeDividends = revenue - totalExpenses;
-        const profitNet = profitBeforeDividends * c.dividendFactor;
-        const rentability = revenue > 0 ? (profitNet / revenue) : 0;
+  if (isGrey) {
+    // Серая схема: официалка = МРОТ * кол-во людей * 12 мес
+    // FIX: В старой версии было просто const * 12, что не учитывало людей. Исправляем.
+    const peopleCount = Math.max(1, base.people); 
+    fotOfficial = (c.officialSalaryDefault || c.mrot) * 12 * peopleCount;
+  } else {
+    // Белая схема: официалка = реальный ФОТ / netFactor (обратный гросс-ап)
+    // Либо равна реальному, если GrossUp не нужен, но обычно в "Белой" мы считаем от "На руки" к "Гросс"
+    // В старом коде: fotOfficial = fotReal / c.payrollNetFactor;
+    fotOfficial = fotReal / (c.payrollNetFactor || 0.87);
+  }
 
-        return { revenue, fotReal, fotOfficial, payrollTaxes, vatDeduction, usnTax, netSalary, totalExpenses, profitBeforeDividends, profitNet, rentability };
-      }
-    },
-    SERUSN: {
-      name: 'СЕР УСН',
-      calculate: (base, c) => {
-        const revenue = base.totalContractGross;
-        const fotReal = base.totalSalaryByAvgRateMonth * 12;
+  // Корректировка: Официалка не может быть больше Реальной (если вдруг МРОТ выше реальной зп)
+  if (fotOfficial > fotReal) fotOfficial = fotReal; 
 
-        const fotOfficial = c.officialSalaryDefault * 12;
-        const ndfl = fotOfficial * c.ndflRatePercent / 100;
-        const pfr = fotOfficial * c.pfrRatePercent / 100;
-        const fss = fotOfficial * c.fssRatePercent / 100;
-        const payrollTaxes = ndfl + pfr + fss;
+  // 4. Payroll Taxes
+  const ndfl = fotOfficial * (c.ndflRatePercent / 100);
+  const pfr = fotOfficial * (c.pfrRatePercent / 100);
+  const fss = fotOfficial * (c.fssRatePercent / 100);
+  const payrollTaxes = ndfl + pfr + fss;
 
-        const vatDeduction = revenue / (100 + c.osnLowRatePercent) * c.osnLowRatePercent;
-        const usnTax = (revenue - vatDeduction) * c.usnRatePercent / 100;
+  // 5. Net Salary & Grey Part
+  const netSalary = fotOfficial - ndfl;
+  const greyAmount = Math.max(0, fotReal - netSalary); // То что платим в конверте
 
-        const netSalary = fotOfficial - ndfl;
-        const greyAmount = fotReal - netSalary;
-        const dividendTax = greyAmount / c.dividendFactor * (c.dividendTaxRatePercent / 100);
+  // 6. Cashout & Dividends Cost
+  let cashOutCommission = 0;
+  let dividendTax = 0;
 
-        const totalExpenses = vatDeduction + usnTax + payrollTaxes + netSalary + dividendTax;
-        const profitBeforeDividends = revenue - totalExpenses;
-        const profitNet = profitBeforeDividends * c.dividendFactor;
-        const rentability = revenue > 0 ? (profitNet / revenue) : 0;
+  if (isIpFlow) {
+    // Специфика ИП НДС
+    // greyAmount уходит через ИП
+    cashOutCommission = greyAmount * (c.cashOutCommissionRate || 0); // Комиссия за обнал
+    // Дивиденды/налог с остатка
+    const taxableBase = greyAmount + cashOutCommission; // В старой логике (grey + comm) / divFactor * taxRate
+    // Воспроизводим логику old IPNDS:
+    // dividendTax = (greyAmount + cashOutCommission) / c.dividendFactor * (c.dividendTaxRatePercent / 100);
+    // Но это странная формула. Оставим совместимость с old calculator.js IPNDS
+    dividendTax = (greyAmount + cashOutCommission) / (c.dividendFactor || 0.85) * (c.dividendTaxRatePercent / 100);
+  } else if (isGrey) {
+    // Обычная серая (SERUSN, SERNDS)
+    // Дивиденды платятся чтобы получить кэш для greyAmount? 
+    // Old Logic: dividendTax = greyAmount / c.dividendFactor * (c.dividendTaxRatePercent / 100);
+    dividendTax = greyAmount / (c.dividendFactor || 0.85) * ((c.dividendTaxRatePercent || 15) / 100);
+  } else {
+    // Белая схема - дивиденды считаются от чистой прибыли в конце (ProfitNet)
+    // Здесь мы считаем COST (затраты) на вывод серой части. В белой схеме greyAmount = 0.
+  }
 
-        return { revenue, fotReal, fotOfficial, payrollTaxes, greyAmount, dividendTax, vatDeduction, usnTax, netSalary, totalExpenses, profitBeforeDividends, profitNet, rentability };
-      }
-    },
-    BELNDS: {
-      name: 'БЕЛ НДС',
-      calculate: (base, c) => {
-        const revenueWithVAT = base.totalContractGross;
-        const revenueBase = revenueWithVAT / (100 + c.osnRatePercent) * 100;
-        const fotReal = base.totalSalaryByAvgRateMonth * 12;
-
-        const fotOfficial = fotReal / c.payrollNetFactor;
-        const ndfl = fotOfficial * c.ndflRatePercent / 100;
-        const pfr = fotOfficial * c.pfrRatePercent / 100;
-        const fss = fotOfficial * c.fssRatePercent / 100;
-        const payrollTaxes = ndfl + pfr + fss;
-
-        const vatOut = revenueWithVAT / (100 + c.osnRatePercent) * c.osnRatePercent;
-        const vatIn = 0;
-
-        const taxableIncome = revenueBase - payrollTaxes - fotOfficial + ndfl;
-        const profitTax = Math.max(0, taxableIncome * c.profitTaxRatePercent / 100);
-
-        const netSalary = fotOfficial - ndfl;
-        const totalExpenses = vatOut + payrollTaxes + netSalary + profitTax;
-        const profitBeforeDividends = revenueWithVAT - totalExpenses;
-        const profitNet = profitBeforeDividends * c.dividendFactor;
-        const rentability = revenueWithVAT > 0 ? (profitNet / revenueWithVAT) : 0;
-
-        return { revenue: revenueWithVAT, revenueBase, fotReal, fotOfficial, payrollTaxes, vatOut, vatIn, profitTax, netSalary, totalExpenses, profitBeforeDividends, profitNet, rentability };
-      }
-    },
-    SERNDS: {
-      name: 'СЕР НДС',
-      calculate: (base, c) => {
-        const revenueWithVAT = base.totalContractGross;
-        const revenueBase = revenueWithVAT / (100 + c.osnRatePercent) * 100;
-        const fotReal = base.totalSalaryByAvgRateMonth * 12;
-
-        const fotOfficial = c.officialSalaryDefault * 12;
-        const ndfl = fotOfficial * c.ndflRatePercent / 100;
-        const pfr = fotOfficial * c.pfrRatePercent / 100;
-        const fss = fotOfficial * c.fssRatePercent / 100;
-        const payrollTaxes = ndfl + pfr + fss;
-
-        const vatOut = revenueWithVAT / (100 + c.osnRatePercent) * c.osnRatePercent;
-        const vatIn = vatOut * c.cashOutRiskCommissionRate;
-
-        const netSalary = fotOfficial - ndfl;
-        const greyAmount = fotReal - netSalary;
-        const dividendTax = greyAmount / c.dividendFactor * (c.dividendTaxRatePercent / 100);
-
-        const taxableIncome = revenueBase - payrollTaxes - fotOfficial + ndfl;
-        const profitTax = Math.max(0, taxableIncome * c.profitTaxRatePercent / 100);
-
-        const totalExpenses = vatOut - vatIn + payrollTaxes + netSalary + dividendTax + profitTax;
-        const profitBeforeDividends = revenueWithVAT - totalExpenses;
-        const profitNet = profitBeforeDividends * c.dividendFactor;
-        const rentability = revenueWithVAT > 0 ? (profitNet / revenueWithVAT) : 0;
-
-        return { revenue: revenueWithVAT, revenueBase, fotReal, fotOfficial, payrollTaxes, greyAmount, dividendTax, vatOut, vatIn, profitTax, netSalary, totalExpenses, profitBeforeDividends, profitNet, rentability };
-      }
-    },
-    IPNDS: {
-      name: 'ИП НДС',
-      calculate: (base, c) => {
-        const revenueWithVAT = base.totalContractGross;
-        const revenueBase = revenueWithVAT / (100 + c.osnRatePercent) * 100;
-        const fotReal = base.totalSalaryByAvgRateMonth * 12;
-
-        const fotOfficial = c.officialSalaryDefault * 12;
-        const ndfl = fotOfficial * c.ndflRatePercent / 100;
-        const pfr = fotOfficial * c.pfrRatePercent / 100;
-        const fss = fotOfficial * c.fssRatePercent / 100;
-        const payrollTaxes = ndfl + pfr + fss;
-
-        const vatOut = revenueWithVAT / (100 + c.osnRatePercent) * c.osnRatePercent;
-
-        const netSalary = fotOfficial - ndfl;
-        const greyAmount = fotReal - netSalary;
-        const cashOutCommission = greyAmount * c.cashOutCommissionRate;
-        const dividendTax = (greyAmount + cashOutCommission) / c.dividendFactor * (c.dividendTaxRatePercent / 100);
-
-        const taxableIncome = revenueBase - payrollTaxes - fotOfficial + ndfl;
-        const profitTax = Math.max(0, taxableIncome * c.profitTaxRatePercent / 100);
-
-        const totalExpenses = vatOut + payrollTaxes + netSalary + cashOutCommission + dividendTax + profitTax;
-        const profitBeforeDividends = revenueWithVAT - totalExpenses;
-        const profitNet = profitBeforeDividends * c.dividendFactor;
-        const rentability = revenueWithVAT > 0 ? (profitNet / revenueWithVAT) : 0;
-
-        return { revenue: revenueWithVAT, revenueBase, fotReal, fotOfficial, payrollTaxes, greyAmount, cashOutCommission, dividendTax, vatOut, profitTax, netSalary, totalExpenses, profitBeforeDividends, profitNet, rentability };
-      }
+  // 7. VAT Flows (Incoming/Deduction)
+  let vatIn = 0;
+  let vatDeduction = 0;
+  
+  if (vatMode === 'outside') {
+    // УСН схемы (BELUSN, SERUSN)
+    // "Вычет" по входящему НДС (расходы с НДС уменьшают базу УСН или просто учитываются как расход?)
+    // Old logic: vatDeduction = revenueTotal / (100 + osnLow) * osnLow; 
+    // Это эмуляция входящего НДС от поставщиков?
+    const osnLow = c.osnLowRatePercent || 7;
+    vatDeduction = revenueTotal / (100 + osnLow) * osnLow;
+  } else {
+    // НДС схемы (BELNDS, SERNDS)
+    if (isGrey) {
+      // SERNDS: vatIn = vatOut * c.cashOutRiskCommissionRate; (Имитация бумажного НДС)
+      const riskRate = c.cashOutRiskCommissionRate || 0.12;
+      vatIn = vatOut * riskRate;
+    } else {
+      // BELNDS: vatIn = 0 (по умолчанию, если нет входящих расходов с НДС)
     }
   }
-};
 
-window.Calculator.calculateScenario = (scenarioKey, base) => {
-  const scenario = window.Calculator.CONFIG.scenarios[scenarioKey];
-  if (!scenario) return {};
-  return scenario.calculate(base, window.Rules.constants);
+  // 8. Business Taxes (USN, Profit)
+  let usnTax = 0;
+  let profitTax = 0;
+
+  if (vatMode === 'outside') {
+    // УСН
+    // База = Доходы - (Вычеты?)
+    // Old logic: usnTax = (revenueTotal - vatDeduction) * c.usnRatePercent / 100;
+    usnTax = (revenueTotal - vatDeduction) * (c.usnRatePercent / 100);
+  } else {
+    // ОСН (Налог на прибыль)
+    // Taxable Income = RevenueBase - Expenses(Official)
+    // Expenses Official = PayrollTaxes + FotOfficial + (maybe vatIn cost?)
+    // Old BELNDS: taxable = revenueBase - payrollTaxes - fotOfficial + ndfl (Wait, fotOfficial includes Ndfl? Yes gross)
+    // Actually expensed is Gross Salary (fotOfficial).
+    // taxableIncome = revenueBase - payrollTaxes - fotOfficial; (Old code adds + ndfl? why? Maybe fotOfficial is considered Net in some twisted logic? 
+    // No, old code: const netSalary = fotOfficial - ndfl; 
+    // Old code taxable: revenueBase - payrollTaxes - fotOfficial + ndfl;
+    // -fotOfficial + ndfl = -netSalary. So expensing only Net Salary? That's weird for Profit Tax.
+    // Usually Profit Tax Base = Revenue - Expenses. Salary Gross IS an expense.
+    // Let's stick to old logic to maintain consistency unless it's clearly wrong.
+    // Old logic implies we deduct Net Salary and Taxes?
+    // payrollTaxes + netSalary = fotOfficial + pfr + fss.
+    // So deducting (payrollTaxes + netSalary) is deducting (fotOfficial + pfr + fss). 
+    // Yes, that is correct total expense.
+    
+    // Recalculating old logic expression: - fotOfficial + ndfl
+    // fotOfficial = Net + Ndfl. => -(Net + Ndfl) + Ndfl = -Net.
+    // So taxable = Revenue - Taxes - NetSalary. Correct.
+    
+    const expenseForProfitTax = payrollTaxes + (fotOfficial - ndfl); // i.e. Net + Taxes
+    const taxableIncome = Math.max(0, revenueBase - expenseForProfitTax);
+    profitTax = taxableIncome * (c.profitTaxRatePercent / 100);
+  }
+
+  // 9. Total Expenses & Profit
+  let totalExpenses = 0;
+  
+  if (vatMode === 'outside') {
+    // USN
+    // Exp = vatDeduction(cost?) + usnTax + payrollTaxes + netSalary + dividendTax(for grey)
+    totalExpenses = vatDeduction + usnTax + payrollTaxes + netSalary + dividendTax + cashOutCommission;
+  } else {
+    // NDS
+    // Exp = vatOut - vatIn + payrollTaxes + netSalary + dividendTax + profitTax + cashOutCommission
+    totalExpenses = vatOut - vatIn + payrollTaxes + netSalary + dividendTax + profitTax + cashOutCommission;
+  }
+
+  // Add extra grey amount to expenses if it wasn't covered by dividendTax logic (it usually isn't an "Expense" in accounting, but it is Cash Outflow)
+  // Wait, old logic for SERUSN: totalExpenses = ... + netSalary + dividendTax.
+  // Where is greyAmount? 
+  // Old SERUSN: profitBeforeDividends = revenue - totalExpenses. 
+  // profitNet = profitBeforeDividends * factor.
+  // The greyAmount comes out of ProfitNet?
+  // Let's check SERUSN "greyAmount" line in render.
+  // The "greyAmount" is just informational. The actual money flow:
+  // You pay taxes, you pay net salary. The rest is Profit.
+  // Then you take Profit, pay Dividend Tax (to cash out) and pay the Grey Salary from that Cash.
+  // So `totalExpenses` acts as "Official + Tax Expenses".
+  
+  // However, for IPNDS, `cashOutCommission` IS an expense paid to "IP".
+  
+  const profitBeforeDividends = revenueTotal - totalExpenses;
+  const profitNet = profitBeforeDividends * (c.dividendFactor || 0.85); // Прибыль на руки (кэш)
+  
+  // Rentability
+  const rentability = revenueTotal > 0 ? (profitNet / revenueTotal) : 0;
+
+  return {
+    schemaCode: schemeCode,
+    revenue: revenueTotal,
+    revenueBase,
+    fotReal,
+    fotOfficial,
+    payrollTaxes,
+    
+    vatOut,
+    vatIn,
+    vatDeduction,
+    
+    usnTax,
+    profitTax,
+    
+    netSalary,
+    greyAmount, // Справочно: сколько надо отдать в конверте
+    
+    dividendTax,
+    cashOutCommission,
+    
+    totalExpenses,
+    profitBeforeDividends,
+    profitNet,
+    rentability
+  };
 };
+// END_FUNCTION_calculateScheme
+
 
 // =====================
 // BG formulas (Excel → code)
@@ -192,6 +263,11 @@ window.Calculator.getServiceMonths = () => {
   return parseInt(el?.value) || 12;
 };
 
+// START_FUNCTION_ensureBGExtraRows
+// START_CONTRACT:
+// PURPOSE: Синхронизация строк БГ (Банковской Гарантии) в доп. расходах.
+// KEYWORDS: [DOMAIN(5): Banking; ACTION(6): UpdateUI]
+// END_CONTRACT
 window.Calculator.ensureBGExtraRows = () => {
   const bid = parseNumRu(document.getElementById('bidSecurity')?.value);
   const contract = parseNumRu(document.getElementById('contractSecurity')?.value);
@@ -226,10 +302,14 @@ window.Calculator.ensureBGExtraRows = () => {
   const cEl = document.getElementById('contractSecurityCalc');
   if (cEl) cEl.textContent = contractCost ? ('БГ: ' + window.Rules.fmtNum(contractCost)) : '';
 };
+// END_FUNCTION_ensureBGExtraRows
 
-// =====================
-// Base aggregation
-// =====================
+// START_FUNCTION_calcBaseForExcel
+// START_CONTRACT:
+// PURPOSE: Агрегация всех пользовательских вводов (постов охраны, доп услуг) в базовые суммы.
+// INPUTS: s (State)
+// OUTPUTS: Object (aggregated totals)
+// END_CONTRACT
 window.Calculator.calcBaseForExcel = (s) => {
   const c = window.Rules.constants;
   const serviceMonths = window.Calculator.getServiceMonths();
@@ -282,6 +362,7 @@ window.Calculator.calcBaseForExcel = (s) => {
     serviceMonths
   };
 };
+// END_FUNCTION_calcBaseForExcel
 
 // =====================
 // Render: Guard lines
@@ -450,14 +531,35 @@ window.Calculator.toggleSchemesExpanded = () => {
   window.Calculator.applySchemesExpanded();
 };
 
+// START_FUNCTION_renderSchemesMatrix
+// START_CONTRACT:
+// PURPOSE: Рендеринг таблицы сравнения схем (Matrix).
+// KEYWORDS: [UI(9): TableRender; PATTERN(8): DynamicColumns]
+// END_CONTRACT
 window.Calculator.renderSchemesMatrix = () => {
   const tbody = document.getElementById('schemesMatrixBody');
   if (!tbody) return;
   tbody.innerHTML = '';
 
   const base = window.Calculator.calcBaseForExcel(window.Calculator.state);
-  const schemeKeys = ['BELUSN', 'SERUSN', 'BELNDS', 'SERNDS', 'IPNDS'];
-  const results = schemeKeys.map(k => ({ key: k, res: window.Calculator.calculateScenario(k, base) }));
+  const c = window.Rules.constants;
+  
+  // Get schemes from calcspec or fallback
+  const schemeDefs = window.Rules.calcspec?.schemes || {
+     BELUSN: { vatMode: 'outside', usesGrossUp: true },
+     SERUSN: { vatMode: 'outside', usesGreySalary: true },
+     BELNDS: { vatMode: 'inside', usesGrossUp: true },
+     SERNDS: { vatMode: 'inside', usesGreySalary: true },
+     IPNDS: { vatMode: 'inside', usesIpFlow: true }
+  };
+  
+  const schemeKeys = Object.keys(schemeDefs);
+  
+  // Perform calculations
+  const results = schemeKeys.map(k => ({ 
+      key: k, 
+      res: window.Calculator.calculateScheme(k, base, c, schemeDefs[k]) 
+  }));
 
   const fmtPct = (x) => (isFinite(x) ? (x * 100).toFixed(2) + '%' : '0.00%');
 
@@ -497,7 +599,7 @@ window.Calculator.renderSchemesMatrix = () => {
     if (metricKey.includes('|')) {
       const [a, b] = metricKey.split('|');
       const av = get(resObj, a);
-      if (av !== null && av !== undefined) return av;
+      if (av) return av; // If av is non-zero/truthy
       return get(resObj, b);
     }
     return get(resObj, metricKey);
@@ -525,6 +627,7 @@ window.Calculator.renderSchemesMatrix = () => {
 
   window.Calculator.applySchemesExpanded();
 };
+// END_FUNCTION_renderSchemesMatrix
 
 // =====================
 // Totals
@@ -692,6 +795,10 @@ window.Calculator.renderAll = () => {
   window.Calculator.calculateTotal();
 };
 
+// =====================
+// Persistence & Init
+// =====================
+
 window.Calculator.handleSaveMain = async () => {
   const tid = window.Calculator.state.currentTenderId || 'manual';
 
@@ -731,8 +838,34 @@ window.Calculator.loadTenderDraft = async () => {
   const tid = window.Calculator.state.currentTenderId;
   if (!tid) return;
   const s = await chrome.storage.local.get([`tenderCalc_${tid}`]);
-  const d = s[`tenderCalc_${tid}`];
-  if (!d) return;
+  const raw = s[`tenderCalc_${tid}`];
+  if (!raw) return;
+
+  // Normalize Data (Deal Model vs Legacy Flat)
+  let d = raw;
+  if (raw.entity === 'Deal') {
+    d = {
+      tenderUrl: raw.tender.url,
+      customerName: raw.company.name,
+      customerInn: raw.company.inn,
+      customerKpp: raw.company.kpp,
+      contactName: raw.contact.name,
+      contactPhone: raw.contact.phone,
+      contactEmail: raw.contact.email,
+      
+      nmcValue: raw.tender.nmcValue,
+      bidSecurity: raw.tender.bidSecurity,
+      contractSecurity: raw.tender.contractSecurity,
+      platformTariff: raw.tender.platformTariff,
+      serviceStart: raw.tender.serviceStart,
+      serviceEnd: raw.tender.serviceEnd,
+      serviceMonths: raw.tender.serviceMonths,
+      
+      rows: raw.calculationGroup.rows,
+      extraRows: raw.calculationGroup.extraRows,
+      comments: raw.comments
+    };
+  }
 
   const setVal = (id, val) => {
     const el = document.getElementById(id);
@@ -786,9 +919,6 @@ window.Calculator.addComment = async () => {
   window.App?.markDirty?.();
 };
 
-// =====================
-// Init
-// =====================
 window.Calculator.init = async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (tab?.url) window.Calculator.state.currentTenderId = window.App.getTenderId(tab.url);
@@ -797,11 +927,11 @@ window.Calculator.init = async () => {
 
   window.Calculator.state.priceList = (s.customPriceList && s.customPriceList.length)
     ? s.customPriceList
-    : (window.Data.defaultPriceList || []);
+    : (window.Data?.defaultPriceList || []);
 
   window.Calculator.state.extraPriceList = (s.customExtraPriceList && s.customExtraPriceList.length)
     ? s.customExtraPriceList
-    : (window.Data.defaultExtraPriceList || []);
+    : (window.Data?.defaultExtraPriceList || []);
 
   await window.Calculator.loadTenderDraft();
 
